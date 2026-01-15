@@ -7,16 +7,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Proposta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @GeneratedValue
+
+    @ManyToOne
     @JoinColumn(name="id_pedido")
     private Pedido pedido;
-    @GeneratedValue
+    @ManyToOne
     @JoinColumn(name="id_prestador")
     private Usuario prestador;
 

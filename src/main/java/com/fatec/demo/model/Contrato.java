@@ -1,10 +1,10 @@
 package com.fatec.demo.model;
 
-import org.springframework.data.annotation.Id;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
@@ -24,7 +24,7 @@ public class Contrato {
     @JoinColumn(name="id_prestador")
     private Usuario prestador;
     @ManyToOne
-    @JoinColumn(name="id_prestador")
+    @JoinColumn(name="id_participante")
     private Participante participante;
 
     private String termos;

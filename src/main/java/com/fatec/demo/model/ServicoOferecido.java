@@ -2,22 +2,22 @@ package com.fatec.demo.model;
 
 import java.math.BigDecimal;
 
-import org.springframework.data.annotation.Id;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class ServicoOferecido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @GeneratedValue
+    @ManyToOne
     @JoinColumn(name="id_usuario")
     private Usuario usuario;
-    @GeneratedValue
+    @ManyToOne
     @JoinColumn(name="id_servico")
     private Cliente servico;
 
