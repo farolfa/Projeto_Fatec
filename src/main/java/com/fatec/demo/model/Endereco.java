@@ -20,15 +20,17 @@ public class Endereco {
     private String rua;
     private String numero;
     private String cidade;
+    private String bairro;
     private String estado;
     private String cep;
 
-    public Endereco(Long id, Usuario usuario, String rua, String numero, String cidade, String estado, String cep) {
+    public Endereco(Long id, Usuario usuario, String rua, String numero, String cidade,String bairro, String estado, String cep) {
         this.id = id;
         this.usuario = usuario;
         this.rua = rua;
         this.numero = numero;
         this.cidade = cidade;
+        this.bairro = bairro;
         this.estado = estado;
         this.cep = cep;
     }
@@ -63,6 +65,12 @@ public class Endereco {
     }
     public void setCidade(String cidade) {
         this.cidade = cidade;
+    }
+    public String getBairro() {
+        return bairro;
+    }
+    public void setBairro(String bairro) {
+        this.bairro = bairro;
     }
     public String getEstado() {
         return estado;
