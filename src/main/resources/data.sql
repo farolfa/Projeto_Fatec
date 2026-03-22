@@ -4,10 +4,10 @@ INSERT INTO categoria (nome) VALUES ('Reformas e Reparos');
 INSERT INTO categoria (nome) VALUES ('Aulas Particulares');
 
 -- 2. USUARIO (IDs: 1=João, 2=Maria, 3=Carlos)
-INSERT INTO usuario (nome, email, tipo, bio, foto, cidade) VALUES 
-('João da Silva', 'joao@email.com', 'CLIENTE', 'Busco profissionais qualificados.', 'foto1.jpg', 'São Paulo'),
-('Maria Oliveira', 'maria@email.com', 'PRESTADOR', 'Especialista em desenvolvimento Java e suporte.', 'foto2.jpg', 'Rio de Janeiro'),
-('Carlos Souza', 'carlos@email.com', 'AMBOS', 'Faço reparos elétricos e contrato aulas.', 'foto3.jpg', 'Curitiba');
+INSERT INTO usuario (nome, email, tipo, bio, foto, cidade, ativo) VALUES 
+('João da Silva', 'joao@email.com', 'CLIENTE', 'Busco profissionais qualificados.', 'foto1.jpg', 'São Paulo', true),
+('Maria Oliveira', 'maria@email.com', 'PRESTADOR', 'Especialista em desenvolvimento Java e suporte.', 'foto2.jpg', 'Rio de Janeiro', true),
+('Carlos Souza', 'carlos@email.com', 'AMBOS', 'Faço reparos elétricos e contrato aulas.', 'foto3.jpg', 'Curitiba', true);
 
 -- 3. ENDERECO (Coluna: ID_USUARIO)
 INSERT INTO endereco (id_usuario, rua, numero, cidade, bairro, estado, cep) VALUES 

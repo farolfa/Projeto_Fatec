@@ -40,6 +40,33 @@ public class UsuarioController {
         return ResponseEntity.ok().body(u);
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody Usuario usuario){
+        try {
+            Usuario u = service.register(usuario);
+            u.setSenha(null);
+            return ResponseEntity.status(201).body(u);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Usuario usuario){
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank() ||
+            usuario.getSenha() == null || usuario.getSenha().isBlank()) {
+            return ResponseEntity.badRequest().body("E-mail e senha são obrigatórios");
+        }
+
+        Usuario u = service.login(usuario.getEmail(), usuario.getSenha());
+        if (u == null) {
+            return ResponseEntity.status(401).body("E-mail ou senha inválidos");
+        }
+
+        u.setSenha(null);
+        return ResponseEntity.ok(u);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id){
         service.delete(id);

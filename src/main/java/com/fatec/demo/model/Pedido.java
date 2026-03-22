@@ -29,6 +29,10 @@ public class Pedido {
     private String localizacao;
     private String status;
 
+    private String contatoNome;
+    private String contatoEmail;
+    private String contatoTelefone;
+
     public Long getId() {
         return id;
     }
@@ -71,6 +75,31 @@ public class Pedido {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public String getContatoNome() {
+        return contatoNome;
+    }
+
+    public void setContatoNome(String contatoNome) {
+        this.contatoNome = contatoNome;
+    }
+
+    public String getContatoEmail() {
+        return contatoEmail;
+    }
+
+    public void setContatoEmail(String contatoEmail) {
+        this.contatoEmail = contatoEmail;
+    }
+
+    public String getContatoTelefone() {
+        return contatoTelefone;
+    }
+
+    public void setContatoTelefone(String contatoTelefone) {
+        this.contatoTelefone = contatoTelefone;
+    }
+
     public Endereco getEndereco() {
         return endereco;
     }
@@ -80,7 +109,7 @@ public class Pedido {
     public Pedido() {
     }
     public Pedido(Long id, Usuario usuario, Cliente servico, String titulo, String descricao, String localizacao,
-            String status, Endereco endereco) {
+            String status, Endereco endereco, String contatoNome, String contatoEmail, String contatoTelefone) {
         this.id = id;
         this.usuario = usuario;
         this.servico = servico;
@@ -89,6 +118,9 @@ public class Pedido {
         this.localizacao = localizacao;
         this.status = status;
         this.endereco = endereco;
+        this.contatoNome = contatoNome;
+        this.contatoEmail = contatoEmail;
+        this.contatoTelefone = contatoTelefone;
     }
 
     

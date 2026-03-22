@@ -18,6 +18,18 @@ public class PedidoService {
         return repository.findAll();
     }
     
+    public List<Pedido> findByUsuarioId(Long usuarioId){
+        return repository.findByUsuarioId(usuarioId);
+    }
+
+    public List<Pedido> findByStatus(String status){
+        return repository.findByStatus(status);
+    }
+
+    public List<Pedido> findByUsuarioIdNotAndStatus(Long usuarioId, String status){
+        return repository.findByUsuarioIdNotAndStatus(usuarioId, status);
+    }
+    
     public Pedido findById(Long id){
         return repository.findById(id).orElse(null);
     }

@@ -12,6 +12,8 @@ public class Usuario {
     private Long id;
     private String nome;
     private String email;
+    private String senha;
+    private boolean ativo = true;
     private String tipo;
     private String bio;
     private String foto;
@@ -20,10 +22,12 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(Long id, String nome, String email, String tipo, String bio, String foto, String cidade) {
+    public Usuario(Long id, String nome, String email, String senha, boolean ativo, String tipo, String bio, String foto, String cidade) {
         this.id = id;
         this.nome = nome;
         this.email = email;
+        this.senha = senha;
+        this.ativo = ativo;
         this.tipo = tipo;
         this.bio = bio;
         this.foto = foto;
@@ -52,6 +56,22 @@ public class Usuario {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getSenha() {
+        return senha;
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     public String getTipo() {
