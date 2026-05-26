@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trabalho Academico - Administracao de Banco de Dados - FazTudoJA</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      securityLevel: "loose",
+      theme: "default",
+      flowchart: { useMaxWidth: true },
+      er: { useMaxWidth: true }
+    });
+  </script>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --ink: #1f2937;
+      --muted: #4b5563;
+      --line: #dbe3ef;
+      --accent: #0f3f87;
+      --accent-soft: #eaf1ff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.45;
+    }
+
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .cover {
+      background: linear-gradient(135deg, #0f3f87 0%, #205cb6 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 36px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 24px rgba(15, 63, 135, 0.25);
+    }
+
+    .cover h1 {
+      margin: 0;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .cover p {
+      margin: 10px 0 0;
+      opacity: 0.95;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(15, 63, 135, 0.05);
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 24px;
+    }
+
+    h3 {
+      margin: 14px 0 8px;
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    p { margin: 8px 0; }
+
+    ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    li { margin: 4px 0; }
+
+    .muted { color: var(--muted); }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 9px;
+      background: var(--accent-soft);
+      border: 1px solid #c8dafd;
+      border-radius: 999px;
+      font-size: 12px;
+      color: #0b3f8e;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .mermaid-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fff;
+    }
+
+    .mermaid {
+      min-width: 980px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eef4ff;
+      color: #173d78;
+    }
+
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 10px;
+      overflow: auto;
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+    }
+
+    .footer {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .cover, .card { box-shadow: none; }
+      .container { max-width: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="cover">
+      <h1>Trabalho Academico de Administracao de Banco de Dados</h1>
+      <p><strong>Tema:</strong> Modelagem, estrutura relacional e boas praticas do banco da plataforma FazTudoJA</p>
+      <p><strong>Entrega:</strong> Documento completo com DER, MER, regras, normalizacao, SQL e analise tecnica</p>
+      <p><strong>Data:</strong> 20/05/2026</p>
+    </section>
+
+    <section class="card">
+      <h2>1. Objetivo</h2>
+      <p>
+        Este trabalho apresenta uma visao academica completa da base de dados do sistema FazTudoJA,
+        cobrindo os tres niveis principais da modelagem de dados (conceitual, logico e fisico),
+        com foco em administracao de banco de dados e governanca da informacao.
+      </p>
+      <div>
+        <span class="tag">DER</span>
+        <span class="tag">MER</span>
+        <span class="tag">Cardinalidade</span>
+        <span class="tag">Integridade</span>
+        <span class="tag">Normalizacao</span>
+        <span class="tag">SQL</span>
+        <span class="tag">Indices</span>
+        <span class="tag">Seguranca</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. Escopo Funcional do Banco</h2>
+      <div class="grid">
+        <div>
+          <h3>2.1 Dominio de negocio</h3>
+          <ul>
+            <li>Cadastro e autenticacao de usuarios.</li>
+            <li>Separacao de papeis: cliente e prestador.</li>
+            <li>Catalogo de servicos por categoria.</li>
+            <li>Criacao de pedidos e envio de propostas.</li>
+            <li>Avaliacao, favoritos, notificacoes e suporte.</li>
+            <li>Canal de mensagens entre participantes.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>2.2 Entidades principais</h3>
+          <ul>
+            <li>USUARIO, PRESTADOR, CLIENTE</li>
+            <li>CATEGORIA, SERVICO_CATALOGO, SERVICO_OFERECIDO</li>
+            <li>PEDIDO, PROPOSTA, AVALIACAO</li>
+            <li>ENDERECO, FAVORITO, NOTIFICACAO</li>
+            <li>PARTICIPANTE, MENSAGEM</li>
+            <li>TICKET_SUPORTE, RESPOSTA_TICKET</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. DER Conceitual (visao de relacionamento)</h2>
+      <p class="muted">Diagrama conceitual com foco em relacoes de negocio.</p>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart LR
+  U[USUARIO] -->|1:N cria| P[PEDIDO]
+  P -->|1:N recebe| PR[PROPOSTA]
+  U -->|1:N envia| PR
+  U -->|1:N avalia| A[AVALIACAO]
+  U -->|1:N e avaliado por| A
+  U -->|1:N possui| E[ENDERECO]
+  E -->|1:N localiza| P
+  C[CATEGORIA] -->|1:N classifica| SC[SERVICO_CATALOGO]
+  SC -->|1:N base para| SO[SERVICO_OFERECIDO]
+  U -->|1:N oferece| SO
+  U -->|1:N recebe| N[NOTIFICACAO]
+  U -->|1:N favorita| F[FAVORITO]
+  U -->|1:1 heranca| CL[CLIENTE]
+  U -->|1:1 heranca| PS[PRESTADOR]
+  U -->|1:N abre| TS[TICKET_SUPORTE]
+  TS -->|1:N possui| RT[RESPOSTA_TICKET]
+  U -->|1:N participa| PA[PARTICIPANTE]
+  PA -->|1:N contem| M[MENSAGEM]
+  U -->|1:N envia| M
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3.1 DER Baseado na Figura de Referencia (Farmacia)</h2>
+      <p class="muted">
+        Modelagem reproduzindo a estrutura da figura enviada: entidades FARMACIA, PRODUTO e FARMACEUTICO,
+        com relacionamentos vende e trabalha.
+      </p>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart LR
+  FARMACIA[FARMACIA\n- CNPJ_farmacia (PK)\n- nome_farmacia\n- end_farmacia\n- tel_farmacia]
+  VENDE{vende}
+  PRODUTO[PRODUTO\n- cod_produto (PK)\n- qtd_produto\n- valor_produto]
+  TRABALHA{trabalha}
+  FARMACEUTICO[FARMACEUTICO\n- RG_farmaceutico (PK)\n- nome_farmaceutico]
+
+  FARMACIA -->|"(1,1)"| VENDE
+  VENDE -->|"(1,n)"| PRODUTO
+
+  FARMACIA -->|"(1,1)"| TRABALHA
+  TRABALHA -->|"(1,n)"| FARMACEUTICO
+        </div>
+      </div>
+      <p>
+        Interpretacao academica: uma FARMACIA vende um ou mais PRODUTOS e uma FARMACIA possui um ou mais
+        FARMACEUTICOS vinculados ao relacionamento trabalha, conforme cardinalidades indicadas na figura.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>4. DER Logico (Crow's Foot com atributos)</h2>
+      <p class="muted">Representacao logica completa da modelagem, pronta para validacao em Mermaid.</p>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+erDiagram
+
+    USUARIO {
+        bigint id PK
+        varchar nome
+        varchar email
+        varchar senha
+        varchar cpf
+        varchar telefone
+        varchar tipo
+        int status
+        bit ativo
+        varchar endereco
+        varchar cidade
+        varchar estado
+        varchar cep
+        varchar bio
+        varchar foto
+    }
+
+    PRESTADOR {
+        bigint id_usuario PK
+        varchar nome_profissional
+        varchar especialidade
+        varchar descricao
+    }
+
+    CLIENTE {
+        bigint id_usuario PK
+        varchar apelido
+        varchar observacao
+    }
+
+    CATEGORIA {
+        bigint id PK
+        varchar nome
+    }
+
+    SERVICO_CATALOGO {
+        bigint id PK
+        varchar titulo
+        varchar descricao
+        bigint id_categoria FK
+    }
+
+    SERVICO_OFERECIDO {
+        bigint id PK
+        bigint id_usuario FK
+        bigint id_servico FK
+        decimal preco_medio
+        varchar descricao
+    }
+
+    ENDERECO {
+        bigint id PK
+        bigint id_usuario FK
+        varchar rua
+        varchar numero
+        varchar bairro
+        varchar cidade
+        varchar estado
+        varchar cep
+    }
+
+    PEDIDO {
+        bigint id PK
+        bigint id_usuario FK
+        bigint id_servico FK
+        bigint id_endereco FK
+        varchar titulo
+        varchar descricao
+        varchar localizacao
+        varchar status
+        varchar contato_nome
+        varchar contato_email
+        varchar contato_telefone
+        bit cliente_confirmou_conclusao
+        bit prestador_confirmou_conclusao
+        datetime data_criacao
+    }
+
+    PROPOSTA {
+        int id PK
+        bigint id_pedido FK
+        bigint id_prestador FK
+        decimal preco_proposto
+        varchar status
+        varchar mensagem
+        varchar prazo_entrega
+        datetime data_criacao
+    }
+
+    AVALIACAO {
+        bigint id PK
+        bigint id_avaliador FK
+        bigint id_avaliado FK
+        bigint nota
+        varchar comentario
+        datetime data
+    }
+
+    FAVORITO {
+        bigint id PK
+        bigint id_usuario FK
+        bigint prestador_id FK
+        varchar prestador_nome
+        varchar prestador_foto
+        datetime saved_at
+    }
+
+    PARTICIPANTE {
+        bigint id PK
+        bigint id_user_cliente FK
+        bigint id_user_prestador FK
+        bit aceite_cliente
+        bit aceite_prestador
+        datetime aceite_timestamp
+        bigint pedido_referencia FK
+        varchar titulo_servico
+    }
+
+    MENSAGEM {
+        bigint id PK
+        bigint id_participante FK
+        bigint id_remetente FK
+        varchar conteudo
+        varchar tipo
+        datetime timestamp
+        bit lida
+    }
+
+    NOTIFICACAO {
+        bigint id PK
+        bigint id_usuario FK
+        varchar tipo
+        varchar mensagem
+        datetime data
+        bit lida
+    }
+
+    NOTIFICACAO_LIDA_EXTERNA {
+        bigint id PK
+      bigint usuario_id FK
+        varchar external_id
+    }
+
+    TICKET_SUPORTE {
+        bigint id PK
+        bigint id_usuario FK
+        varchar assunto
+        varchar mensagem
+        varchar categoria
+        varchar status
+        datetime criado_em
+    }
+
+    RESPOSTA_TICKET {
+        bigint id PK
+        bigint id_ticket FK
+        varchar respondente
+        varchar resposta
+        datetime respondido_em
+    }
+
+    USUARIO ||--o| PRESTADOR : "heranca (e-um)"
+    USUARIO ||--o| CLIENTE : "heranca (e-um)"
+    CATEGORIA ||--o{ SERVICO_CATALOGO : "classifica (1,N)"
+    SERVICO_CATALOGO ||--o{ SERVICO_OFERECIDO : "e ofertado (1,N)"
+    USUARIO ||--o{ SERVICO_OFERECIDO : "oferece (1,N)"
+    USUARIO ||--o{ ENDERECO : "possui (1,N)"
+    USUARIO ||--o{ PEDIDO : "cria (1,N)"
+    SERVICO_CATALOGO ||--o{ PEDIDO : "referenciado em (1,N)"
+    ENDERECO ||--o{ PEDIDO : "localiza (1,N)"
+    PEDIDO ||--o{ PROPOSTA : "recebe (1,N)"
+    USUARIO ||--o{ PROPOSTA : "envia (1,N)"
+    USUARIO ||--o{ AVALIACAO : "avalia (avaliador 1,N)"
+    USUARIO ||--o{ AVALIACAO : "recebe (avaliado 1,N)"
+    USUARIO ||--o{ FAVORITO : "favorita (1,N)"
+    USUARIO ||--o{ PARTICIPANTE : "participa como cliente (1,N)"
+    USUARIO ||--o{ PARTICIPANTE : "participa como prestador (1,N)"
+    PARTICIPANTE ||--o{ MENSAGEM : "contem (1,N)"
+    USUARIO ||--o{ MENSAGEM : "envia (1,N)"
+    USUARIO ||--o{ NOTIFICACAO : "recebe (1,N)"
+    USUARIO ||--o{ NOTIFICACAO_LIDA_EXTERNA : "marca externa lida (1,N)"
+    USUARIO ||--o{ TICKET_SUPORTE : "abre (1,N)"
+    TICKET_SUPORTE ||--o{ RESPOSTA_TICKET : "possui (1,N)"
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>5. MER Relacional (resumo academico)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Entidade</th>
+            <th>Chave Primaria</th>
+            <th>Chaves Estrangeiras</th>
+            <th>Observacoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>USUARIO</td><td>id</td><td>-</td><td>Entidade central do sistema.</td></tr>
+          <tr><td>PRESTADOR</td><td>id_usuario</td><td>id_usuario -> USUARIO(id)</td><td>Especializacao de USUARIO.</td></tr>
+          <tr><td>CLIENTE</td><td>id_usuario</td><td>id_usuario -> USUARIO(id)</td><td>Especializacao de USUARIO.</td></tr>
+          <tr><td>CATEGORIA</td><td>id</td><td>-</td><td>Classificacao de servicos.</td></tr>
+          <tr><td>SERVICO_CATALOGO</td><td>id</td><td>id_categoria -> CATEGORIA(id)</td><td>Catalogo base.</td></tr>
+          <tr><td>SERVICO_OFERECIDO</td><td>id</td><td>id_usuario -> USUARIO(id), id_servico -> SERVICO_CATALOGO(id)</td><td>Oferta de servico por prestador.</td></tr>
+          <tr><td>ENDERECO</td><td>id</td><td>id_usuario -> USUARIO(id)</td><td>Endereco do usuario.</td></tr>
+          <tr><td>PEDIDO</td><td>id</td><td>id_usuario -> USUARIO(id), id_servico -> SERVICO_CATALOGO(id), id_endereco -> ENDERECO(id)</td><td>Solicitacao de servico.</td></tr>
+          <tr><td>PROPOSTA</td><td>id</td><td>id_pedido -> PEDIDO(id), id_prestador -> USUARIO(id)</td><td>Resposta comercial ao pedido.</td></tr>
+          <tr><td>AVALIACAO</td><td>id</td><td>id_avaliador -> USUARIO(id), id_avaliado -> USUARIO(id)</td><td>Qualidade e reputacao.</td></tr>
+          <tr><td>FAVORITO</td><td>id</td><td>id_usuario -> USUARIO(id)</td><td>Lista de prestadores salvos.</td></tr>
+          <tr><td>PARTICIPANTE</td><td>id</td><td>id_user_cliente -> USUARIO(id), id_user_prestador -> USUARIO(id)</td><td>Canal de conversa.</td></tr>
+          <tr><td>MENSAGEM</td><td>id</td><td>id_participante -> PARTICIPANTE(id), id_remetente -> USUARIO(id)</td><td>Historico de mensagens.</td></tr>
+          <tr><td>NOTIFICACAO</td><td>id</td><td>id_usuario -> USUARIO(id)</td><td>Eventos para usuario.</td></tr>
+          <tr><td>NOTIFICACAO_LIDA_EXTERNA</td><td>id</td><td>usuario_id -> USUARIO(id)</td><td>Controle de leitura externa.</td></tr>
+          <tr><td>TICKET_SUPORTE</td><td>id</td><td>id_usuario -> USUARIO(id)</td><td>Chamados de suporte.</td></tr>
+          <tr><td>RESPOSTA_TICKET</td><td>id</td><td>id_ticket -> TICKET_SUPORTE(id)</td><td>Respostas aos chamados.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>5.1 MER em Texto (Entidades e Ligacoes)</h2>
+
+      <h3>Entidades</h3>
+      <p>USUARIO(id, nome, email, senha, cpf, telefone, tipo, status, ativo, endereco, cidade, estado, cep, bio, foto)</p>
+      <p>CLIENTE(id_usuario, apelido, observacao)</p>
+      <p>PRESTADOR(id_usuario, nome_profissional, especialidade, descricao)</p>
+      <p>CATEGORIA(id, nome)</p>
+      <p>SERVICO_CATALOGO(id, titulo, descricao, id_categoria)</p>
+      <p>SERVICO_OFERECIDO(id, id_usuario, id_servico, preco_medio, descricao)</p>
+      <p>ENDERECO(id, id_usuario, rua, numero, bairro, cidade, estado, cep)</p>
+      <p>PEDIDO(id, id_usuario, id_servico, id_endereco, titulo, descricao, localizacao, status, contato_nome, contato_email, contato_telefone, cliente_confirmou_conclusao, prestador_confirmou_conclusao, data_criacao)</p>
+      <p>PROPOSTA(id, id_pedido, id_prestador, preco_proposto, status, mensagem, prazo_entrega, data_criacao)</p>
+      <p>AVALIACAO(id, id_avaliador, id_avaliado, nota, comentario, data)</p>
+      <p>FAVORITO(id, id_usuario, prestador_id, prestador_nome, prestador_foto, saved_at)</p>
+      <p>PARTICIPANTE(id, id_user_cliente, id_user_prestador, aceite_cliente, aceite_prestador, aceite_timestamp, pedido_referencia, titulo_servico)</p>
+      <p>MENSAGEM(id, id_participante, id_remetente, conteudo, tipo, timestamp, lida)</p>
+      <p>NOTIFICACAO(id, id_usuario, tipo, mensagem, data, lida)</p>
+      <p>NOTIFICACAO_LIDA_EXTERNA(id, usuario_id, external_id)</p>
+      <p>TICKET_SUPORTE(id, id_usuario, assunto, mensagem, categoria, status, criado_em)</p>
+      <p>RESPOSTA_TICKET(id, id_ticket, respondente, resposta, respondido_em)</p>
+
+      <h3>Ligacoes e Cardinalidades</h3>
+      <p>USUARIO 1:1 CLIENTE</p>
+      <p>USUARIO 1:1 PRESTADOR</p>
+      <p>CATEGORIA 1:N SERVICO_CATALOGO</p>
+      <p>SERVICO_CATALOGO 1:N SERVICO_OFERECIDO</p>
+      <p>USUARIO 1:N SERVICO_OFERECIDO</p>
+      <p>USUARIO 1:N ENDERECO</p>
+      <p>USUARIO 1:N PEDIDO</p>
+      <p>SERVICO_CATALOGO 1:N PEDIDO</p>
+      <p>ENDERECO 1:N PEDIDO</p>
+      <p>PEDIDO 1:N PROPOSTA</p>
+      <p>USUARIO 1:N PROPOSTA</p>
+      <p>USUARIO 1:N AVALIACAO (avaliador)</p>
+      <p>USUARIO 1:N AVALIACAO (avaliado)</p>
+      <p>USUARIO 1:N FAVORITO</p>
+      <p>USUARIO 1:N PARTICIPANTE (como cliente)</p>
+      <p>USUARIO 1:N PARTICIPANTE (como prestador)</p>
+      <p>PARTICIPANTE 1:N MENSAGEM</p>
+      <p>USUARIO 1:N MENSAGEM (remetente)</p>
+      <p>USUARIO 1:N NOTIFICACAO</p>
+      <p>USUARIO 1:N NOTIFICACAO_LIDA_EXTERNA</p>
+      <p>USUARIO 1:N TICKET_SUPORTE</p>
+      <p>TICKET_SUPORTE 1:N RESPOSTA_TICKET</p>
+    </section>
+
+    <section class="card">
+      <h2>6. Regras de Integridade</h2>
+      <h3>6.1 Integridade de entidade</h3>
+      <ul>
+        <li>Toda tabela possui PK para unicidade dos registros.</li>
+        <li>Especializacoes (CLIENTE e PRESTADOR) usam PK=FK para garantir identidade com USUARIO.</li>
+      </ul>
+      <h3>6.2 Integridade referencial</h3>
+      <ul>
+        <li>Pedidos, propostas, avaliacoes e mensagens dependem de registros pai.</li>
+        <li>Relacionamentos 1:N sao implementados com FK no lado N.</li>
+      </ul>
+      <h3>6.3 Integridade de dominio</h3>
+      <ul>
+        <li>Campos status e tipo devem operar com valores controlados.</li>
+        <li>Campo nota de AVALIACAO deve respeitar faixa de 1 a 5.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>7. Normalizacao (analise didatica)</h2>
+      <ul>
+        <li>1FN: atributos atomicos e sem grupos repetitivos nas tabelas principais.</li>
+        <li>2FN: dependencias parciais minimizadas (chaves simples em quase todas as entidades).</li>
+        <li>3FN: separacao de conceitos reduz redundancia (ex.: CATEGORIA, SERVICO_CATALOGO e SERVICO_OFERECIDO).</li>
+      </ul>
+      <p>
+        Pontos de atencao academica: FAVORITO e NOTIFICACAO_LIDA_EXTERNA podem evoluir com constraints
+        adicionais para reforcar consistencia e evitar duplicidades logicas.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>8. SQL de Referencia (DDL e consultas)</h2>
+      <h3>8.1 Exemplo de criacao de tabela</h3>
+      <pre>CREATE TABLE usuario (
+  id BIGINT PRIMARY KEY,
+  nome VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  cpf VARCHAR(14) NOT NULL UNIQUE,
+  tipo VARCHAR(20) NOT NULL,
+  status INT,
+  ativo BIT NOT NULL
+);</pre>
+
+      <h3>8.2 Exemplo de relacionamento</h3>
+      <pre>CREATE TABLE pedido (
+  id BIGINT PRIMARY KEY,
+  id_usuario BIGINT NOT NULL,
+  id_servico BIGINT,
+  id_endereco BIGINT,
+  titulo VARCHAR(160) NOT NULL,
+  status VARCHAR(30) NOT NULL,
+  CONSTRAINT fk_pedido_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+);</pre>
+
+      <h3>8.3 Consulta com join</h3>
+      <pre>SELECT p.id,
+       p.titulo,
+       u.nome AS cliente,
+       sc.titulo AS servico_base
+FROM pedido p
+JOIN usuario u ON u.id = p.id_usuario
+LEFT JOIN servico_catalogo sc ON sc.id = p.id_servico;
+</pre>
+    </section>
+
+    <section class="card">
+      <h2>9. Administracao do Banco (visao de aula)</h2>
+      <h3>9.1 Indices recomendados</h3>
+      <ul>
+        <li>Indices em todas as FKs para acelerar joins.</li>
+        <li>Indice composto em PROPOSTA(id_pedido, id_prestador).</li>
+        <li>Indice em PEDIDO(status, data_criacao) para filtros operacionais.</li>
+      </ul>
+
+      <h3>9.2 Seguranca e acesso</h3>
+      <ul>
+        <li>Perfis de acesso separados: leitura, operacao e administracao.</li>
+        <li>Auditoria para alteracoes sensiveis (status, avaliacoes, suporte).</li>
+        <li>Criptografia para dados sensiveis e backup cifrado.</li>
+      </ul>
+
+      <h3>9.3 Backup e recuperacao</h3>
+      <ul>
+        <li>Politica full semanal + incremental diario.</li>
+        <li>Teste de restore periodico em ambiente homologacao.</li>
+        <li>Definicao de RPO e RTO conforme criticidade do sistema.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>10. Conclusao</h2>
+      <p>
+        A modelagem de dados do FazTudoJA apresenta estrutura coerente para o contexto de marketplace de servicos,
+        com entidade central de usuario, especializacoes e fluxo completo de solicitacao-proposta-execucao-avaliacao.
+        O desenho atende bem aos fundamentos de administracao de banco de dados e pode evoluir com refinamentos
+        de constraints, estrategia de indices e politicas de seguranca para cenarios de alta escala.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>11. Referencias sugeridas</h2>
+      <ul>
+        <li>Elmasri, Navathe. Sistemas de Banco de Dados.</li>
+        <li>Date, C. J. Introducao a Sistemas de Banco de Dados.</li>
+        <li>Silberschatz, Korth, Sudarshan. Database System Concepts.</li>
+      </ul>
+      <p class="footer">Documento gerado para uso academico. Formato pronto para exportacao em PDF via navegador (Ctrl+P).</p>
+    </section>
+  </main>
+</body>
+</html>

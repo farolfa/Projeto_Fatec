@@ -1,0 +1,641 @@
+import { Button } from "../../components/ui/button";
+import { Card } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Input } from "../../components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
+  Search,
+  Filter,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  MessageSquare,
+  Link as LinkIcon,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { getSessionUser } from "../../services/auth";
+import {
+  type DemoProposal,
+  deleteDemoProposal,
+  getOrderById,
+  getProviderProposals,
+  updateDemoProposal,
+  confirmWorkFinished,
+  getOrderReviewsStatus,
+} from "../../services/demo-orders";
+import { ensureConversation } from "../../services/demo-messages";
+
+export function MinhasPropostas() {
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [editingProposalId, setEditingProposalId] = useState<number | null>(
+    null
+  );
+  const [deletingProposalId, setDeletingProposalId] = useState<number | null>(
+    null
+  );
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [myProposals, setMyProposals] = useState<DemoProposal[]>([]);
+  const [proposalForm, setProposalForm] = useState({
+    price: "",
+    deliveryTime: "",
+    description: "",
+  });
+  const navigate = useNavigate();
+  const user = getSessionUser();
+
+  useEffect(() => {
+    if (!user?.id) {
+      setMyProposals([]);
+      return;
+    }
+    void getProviderProposals(user.id).then(setMyProposals);
+  }, [user?.id]);
+
+  const reloadProposals = () => {
+    if (!user?.id) {
+      setMyProposals([]);
+      return;
+    }
+    void getProviderProposals(user.id).then(setMyProposals);
+  };
+
+  const handleOpenConversation = async (
+    proposal: (typeof myProposals)[number]
+  ) => {
+    if (!user?.id) {
+      setFeedbackMessage("Faça login novamente para abrir a conversa.");
+      return;
+    }
+
+    const order = await getOrderById(proposal.orderId);
+    if (!order) {
+      setFeedbackMessage(
+        "Pedido relacionado não foi encontrado para esta proposta."
+      );
+      return;
+    }
+
+    try {
+      const conversation = await ensureConversation({
+        orderId: order.id,
+        serviceTitle: order.title,
+        clientUserId: order.clientUserId,
+        providerUserId: user.id,
+        clientName: proposal.clientName,
+        providerName: user.nome,
+        providerPhoto: user.foto,
+      });
+      navigate(`/prestador/mensagens?conversa=${conversation.id}`);
+    } catch (error) {
+      setFeedbackMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível abrir a conversa."
+      );
+    }
+  };
+
+  const handleConfirmWorkFinished = async (
+    proposal: (typeof myProposals)[number]
+  ) => {
+    if (!user?.id) {
+      setFeedbackMessage("Faça login novamente.");
+      return;
+    }
+
+    try {
+      const updatedOrder = await confirmWorkFinished(proposal.orderId, user.id);
+      const bothConfirmed =
+        updatedOrder.status === "work_completed_confirmed" ||
+        (updatedOrder.clientFinishedConfirmed === true &&
+          updatedOrder.providerFinishedConfirmed === true);
+      if (bothConfirmed) {
+        setFeedbackMessage(
+          "Trabalho confirmado por ambos. Redirecionando para avaliação..."
+        );
+        setTimeout(
+          () => navigate(`/prestador/avaliacoes?pedido=${proposal.orderId}`),
+          1500
+        );
+        return;
+      }
+      setFeedbackMessage(
+        "Você confirmou que o trabalho foi finalizado! Aguardando confirmação do cliente."
+      );
+      reloadProposals();
+    } catch (error) {
+      setFeedbackMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível confirmar o trabalho."
+      );
+    }
+  };
+
+  const handleStartEdit = (proposal: (typeof myProposals)[number]) => {
+    setFeedbackMessage("");
+    setEditingProposalId(proposal.id);
+    setProposalForm({
+      price: proposal.myPrice,
+      deliveryTime: proposal.deliveryTime,
+      description: proposal.description,
+    });
+  };
+
+  const handleSaveEdit = async (proposalId: number) => {
+    if (!user?.id) {
+      return;
+    }
+
+    if (!proposalForm.price.trim()) {
+      setFeedbackMessage("Informe o valor do orçamento.");
+      return;
+    }
+
+    if (!proposalForm.deliveryTime.trim()) {
+      setFeedbackMessage("Informe o prazo do serviço.");
+      return;
+    }
+
+    if (!proposalForm.description.trim()) {
+      setFeedbackMessage("Descreva os detalhes da proposta.");
+      return;
+    }
+
+    try {
+      await updateDemoProposal({
+        proposalId,
+        providerUserId: user.id,
+        price: proposalForm.price,
+        deliveryTime: proposalForm.deliveryTime,
+        description: proposalForm.description,
+      });
+      reloadProposals();
+      setEditingProposalId(null);
+      setFeedbackMessage("Proposta atualizada com sucesso.");
+    } catch (error) {
+      setFeedbackMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar a proposta."
+      );
+    }
+  };
+
+  const handleDeleteProposal = async (
+    proposal: (typeof myProposals)[number]
+  ) => {
+    if (!user?.id) {
+      setFeedbackMessage("Faça login novamente para excluir a proposta.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Deseja excluir esta proposta? Esta ação não pode ser desfeita."
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setFeedbackMessage("");
+    setDeletingProposalId(proposal.id);
+
+    try {
+      await deleteDemoProposal(proposal.id, user.id);
+      setMyProposals((prev) =>
+        prev.filter((item) => item.id !== proposal.id)
+      );
+      setFeedbackMessage("Proposta excluída com sucesso.");
+    } catch (error) {
+      setFeedbackMessage(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível excluir a proposta."
+      );
+    } finally {
+      setDeletingProposalId(null);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const badges = {
+      pending: {
+        label: "Aguardando Cliente",
+        icon: Clock,
+        className: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      },
+      accepted: {
+        label: "Aceita ✓",
+        icon: CheckCircle,
+        className: "bg-green-100 text-green-800 border-green-300",
+      },
+      rejected: {
+        label: "Não Selecionada",
+        icon: XCircle,
+        className: "bg-red-100 text-red-800 border-red-300",
+      },
+    };
+    return (
+      badges[status as keyof typeof badges] || badges.pending
+    );
+  };
+
+  const filteredProposals = myProposals.filter((proposal) => {
+    const matchesStatus =
+      filterStatus === "all" || proposal.status === filterStatus;
+    const matchesSearch =
+      proposal.serviceTitle
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      proposal.clientName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
+
+  const stats = {
+    total: myProposals.length,
+    pending: myProposals.filter((p) => p.status === "pending").length,
+    accepted: myProposals.filter((p) => p.status === "accepted").length,
+    rejected: myProposals.filter((p) => p.status === "rejected").length,
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-blue-700 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4">
+            <DollarSign size={40} />
+            <div>
+              <h1 className="text-3xl font-bold mb-1">Minhas Propostas</h1>
+              <p className="text-blue-100">
+                Acompanhe todas as suas propostas enviadas
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {feedbackMessage && (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            {feedbackMessage}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="p-4 bg-blue-50 border-2 border-blue-200">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">
+                {stats.total}
+              </div>
+              <div className="text-sm text-gray-700">Total Enviadas</div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-orange-50 border-2 border-yellow-200">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-yellow-600 mb-1">
+                {stats.pending}
+              </div>
+              <div className="text-sm text-gray-700">Aguardando</div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-emerald-50 border-2 border-green-200">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-green-600 mb-1">
+                {stats.accepted}
+              </div>
+              <div className="text-sm text-gray-700">Aceitas</div>
+            </div>
+          </Card>
+          <Card className="p-4 bg-blue-50 border-2 border-gray-200">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-gray-600 mb-1">
+                {stats.rejected}
+              </div>
+              <div className="text-sm text-gray-700">Não Selecionadas</div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                size={20}
+              />
+              <Input
+                type="text"
+                placeholder="Buscar propostas..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-full md:w-48">
+                <Filter size={16} className="mr-2" />
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="pending">Aguardando</SelectItem>
+                <SelectItem value="accepted">Aceitas</SelectItem>
+                <SelectItem value="rejected">
+                  Não Selecionadas
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Proposals List */}
+        <div className="space-y-4">
+          {filteredProposals.map((proposal) => {
+            const statusBadge = getStatusBadge(proposal.status);
+            const StatusIcon = statusBadge.icon;
+            const order = getOrderById(proposal.orderId);
+            const reviewStatus = getOrderReviewsStatus(proposal.orderId);
+            const readyToReview =
+              order?.status === "work_completed_confirmed" ||
+              (order?.clientFinishedConfirmed === true &&
+                order?.providerFinishedConfirmed === true);
+            const canReviewClient =
+              proposal.status === "accepted" &&
+              readyToReview &&
+              !reviewStatus.providerReviewGiven;
+
+            return (
+              <Card
+                key={proposal.id}
+                className={`p-6 hover:shadow-xl transition-all ${
+                  proposal.status === "accepted"
+                    ? "border-2 border-green-500 bg-green-50/30"
+                    : ""
+                }`}
+              >
+                {proposal.status === "accepted" && (
+                  <div className="bg-green-500 text-white px-4 py-2 rounded-lg mb-4 flex items-center gap-2">
+                    <CheckCircle size={20} />
+                    <span className="font-semibold">
+                      Parabéns! Sua proposta foi aceita pelo cliente.
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Main Info */}
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h3 className="text-xl font-bold mb-1">
+                          {proposal.serviceTitle}
+                        </h3>
+                        <p className="text-gray-600 text-sm">
+                          Cliente: {proposal.clientName}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold border flex items-center gap-1 ${statusBadge.className}`}
+                      >
+                        <StatusIcon size={14} />
+                        {statusBadge.label}
+                      </span>
+                    </div>
+
+                    <p className="text-gray-700 mb-4 italic">
+                      "{proposal.description}"
+                    </p>
+
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <Clock size={16} />
+                        <span>Enviada {proposal.sentDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <AlertCircle size={16} />
+                        <span>Prazo: {proposal.deliveryTime}</span>
+                      </div>
+                      <div className="text-orange-600 font-medium">
+                        {proposal.competitors} profissionais concorrendo
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Price and Actions */}
+                  <div className="lg:w-64 flex flex-col gap-3">
+                    <div className="bg-emerald-50 p-6 rounded-xl border-2 border-green-300 text-center">
+                      <div className="text-sm text-gray-600 mb-1">
+                        Seu Orçamento
+                      </div>
+                      <div className="text-3xl font-bold text-green-600">
+                        {proposal.myPrice}
+                      </div>
+                    </div>
+
+                    {proposal.status === "pending" && (
+                      <>
+                        <Button
+                          type="button"
+                          onClick={() => handleStartEdit(proposal)}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Editar Proposta
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            handleOpenConversation(proposal)
+                          }
+                          variant="outline"
+                          className="w-full text-blue-600 border-blue-300"
+                        >
+                          <MessageSquare className="mr-2" size={18} />
+                          Mensagem
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => void handleDeleteProposal(proposal)}
+                          variant="destructive"
+                          className="w-full"
+                          disabled={deletingProposalId === proposal.id}
+                        >
+                          <Trash2 className="mr-2" size={18} />
+                          {deletingProposalId === proposal.id
+                            ? "Excluindo..."
+                            : "Excluir Proposta"}
+                        </Button>
+                      </>
+                    )}
+
+                    {proposal.status === "accepted" && (
+                      <>
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            handleOpenConversation(proposal)
+                          }
+                          className="w-full bg-emerald-600"
+                        >
+                          <MessageSquare className="mr-2" size={18} />
+                          Contatar Cliente
+                        </Button>
+
+                        {!order?.providerFinishedConfirmed ? (
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              handleConfirmWorkFinished(proposal)
+                            }
+                            variant="outline"
+                            className="w-full text-blue-600 border-blue-300"
+                          >
+                            <CheckCircle className="mr-2" size={18} />
+                            Trabalho Finalizado
+                          </Button>
+                        ) : order?.status ===
+                          "work_completed_confirmed" ? (
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              navigate(
+                                `/prestador/avaliacoes?pedido=${proposal.orderId}`
+                              )
+                            }
+                            className="w-full bg-yellow-600 hover:bg-yellow-700"
+                          >
+                            <CheckCircle className="mr-2" size={18} />
+                            Ir para Avaliação
+                          </Button>
+                        ) : (
+                          <div className="w-full bg-yellow-50 border-2 border-yellow-300 rounded-lg p-3 text-center">
+                            <p className="font-semibold text-yellow-900 text-sm">
+                              ✓ Você finalizou o trabalho
+                            </p>
+                            <p className="text-xs text-yellow-700 mt-1">
+                              Aguardando confirmação do cliente
+                            </p>
+                          </div>
+                        )}
+
+                        {canReviewClient && (
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              navigate(
+                                `/prestador/avaliacoes?pedido=${proposal.orderId}`
+                              )
+                            }
+                            variant="outline"
+                            className="w-full text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+                          >
+                            <LinkIcon className="mr-2" size={18} />
+                            Avaliar Cliente
+                          </Button>
+                        )}
+                      </>
+                    )}
+
+                    {proposal.status === "rejected" && (
+                      <Button variant="outline" disabled className="w-full">
+                        Cliente escolheu outro
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {editingProposalId === proposal.id &&
+                  proposal.status === "pending" && (
+                    <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50/60 p-4">
+                      <h4 className="text-base font-semibold text-blue-900 mb-3">
+                        Editar proposta
+                      </h4>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <Input
+                          value={proposalForm.price}
+                          onChange={(event) =>
+                            setProposalForm((prev) => ({
+                              ...prev,
+                              price: event.target.value,
+                            }))
+                          }
+                          placeholder="Ex.: R$ 250,00"
+                        />
+                        <Input
+                          value={proposalForm.deliveryTime}
+                          onChange={(event) =>
+                            setProposalForm((prev) => ({
+                              ...prev,
+                              deliveryTime: event.target.value,
+                            }))
+                          }
+                          placeholder="Ex.: Em até 2 dias"
+                        />
+                      </div>
+                      <Input
+                        className="mt-3"
+                        value={proposalForm.description}
+                        onChange={(event) =>
+                          setProposalForm((prev) => ({
+                            ...prev,
+                            description: event.target.value,
+                          }))
+                        }
+                        placeholder="Descreva o que está incluso no orçamento"
+                      />
+                      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setEditingProposalId(null)}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() =>
+                            handleSaveEdit(proposal.id)
+                          }
+                        >
+                          Salvar alterações
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Empty State */}
+        {filteredProposals.length === 0 && (
+          <Card className="p-12 text-center">
+            <DollarSign className="mx-auto text-gray-400 mb-4" size={64} />
+            <h3 className="text-xl font-semibold mb-2">
+              Nenhuma proposta encontrada
+            </h3>
+            <p className="text-gray-600">
+              Você ainda não enviou propostas
+              {filterStatus !== "all" ? " com este status" : ""}
+            </p>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

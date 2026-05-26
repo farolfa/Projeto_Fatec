@@ -1,0 +1,3 @@
+import { api } from "./api"; export interface RatingStats { rating: number; count: number; source: "api" | "local";
+} export async function getUserRatingStats(userId: number): Promise<RatingStats> { try { const reviews = await api.getAvaliacoes(); const target = reviews.filter( (item) => item?.avaliado?.id === userId && Number.isFinite(Number(item.nota)) ); if (target.length === 0) { return { rating: 0, count: 0, source: "api" }; } const total = target.reduce((sum, item) => sum + Number(item.nota), 0); return { rating: total / target.length, count: target.length, source: "api", }; } catch { return { rating: 0, count: 0, source: "api" }; }
+}

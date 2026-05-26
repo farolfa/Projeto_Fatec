@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar Storage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin: 0 0 20px 0;
+        }
+        .status {
+            font-size: 18px;
+            color: #666;
+            margin: 20px 0;
+        }
+        .success {
+            color: #4CAF50;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧹 Limpando Storage...</h1>
+        <div class="status">Aguarde...</div>
+        <div class="success" id="result"></div>
+    </div>
+
+    <script>
+        // Limpar localStorage
+        localStorage.clear();
+        
+        // Limpar sessionStorage
+        sessionStorage.clear();
+        
+        // Limpar IndexedDB (se houver)
+        if (window.indexedDB && indexedDB.databases) {
+            indexedDB.databases().then(dbs => {
+                dbs.forEach(db => {
+                    indexedDB.deleteDatabase(db.name);
+                });
+            });
+        }
+        
+        // Mostrar resultado
+        setTimeout(() => {
+            document.querySelector('.status').textContent = 'Storage limpo com sucesso!';
+            document.getElementById('result').textContent = '✅ Pronto!';
+            
+            // Redirecionar após 2 segundos
+            setTimeout(() => {
+                window.location.href = 'http://localhost:5173/';
+            }, 2000);
+        }, 500);
+    </script>
+</body>
+</html>

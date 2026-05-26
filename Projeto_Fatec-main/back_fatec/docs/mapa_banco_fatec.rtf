@@ -1,0 +1,238 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}{\f1 Consolas;}}
+\paperw11907\paperh16840\margl1134\margr1134\margt1134\margb1134
+\fs24
+\b Mapa do Banco - Projeto Fatec\b0\par
+\par
+Gerado em: 23/03/2026\par
+Fonte: entidades JPA em src/main/java/com/fatec/demo/model e script src/main/resources/data.sql\par
+\par
+\b 1) Visao Geral\b0\par
+- Banco: H2 (memoria)\par
+- Estrategia de heranca em usuarios: JOINED\par
+- Total de tabelas mapeadas por entidade: 17\par
+- Tabelas com dados seed no data.sql: categorias, servico_catalogo\par
+\par
+\b 2) Tabelas e Colunas\b0\par
+\par
+\b Tabela: usuarios\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- nome: VARCHAR(120), NOT NULL\par
+- email: VARCHAR(160), NOT NULL, UNIQUE (uk_usuarios_email)\par
+- senha: VARCHAR(128), NOT NULL\par
+- ativo: BOOLEAN, NOT NULL\par
+- tipo: VARCHAR(20), NOT NULL (enum TipoUsuario)\par
+- cpf: VARCHAR(14), NOT NULL, UNIQUE (uk_usuarios_cpf)\par
+- telefone: VARCHAR(20), NOT NULL\par
+- endereco: VARCHAR(180), NOT NULL\par
+- estado: VARCHAR(2), NOT NULL\par
+- cep: VARCHAR(8), NOT NULL\par
+- bio: VARCHAR(500), NULL\par
+- foto: VARCHAR(255), NULL\par
+- cidade: VARCHAR(120), NOT NULL\par
+Indices:\par
+- idx_usuarios_tipo (tipo)\par
+- idx_usuarios_ativo (ativo)\par
+\par
+\b Tabela: cliente\b0\par
+PK/FK: id_usuario (BIGINT) -> usuarios.id\par
+Colunas:\par
+- id_usuario: BIGINT, PK e FK\par
+- apelido: VARCHAR(120), NULL\par
+- observacao: VARCHAR(500), NULL\par
+\par
+\b Tabela: prestador\b0\par
+PK/FK: id_usuario (BIGINT) -> usuarios.id\par
+Colunas:\par
+- id_usuario: BIGINT, PK e FK\par
+- nome_profissional: VARCHAR(120), NOT NULL\par
+- especialidade: VARCHAR(160), NOT NULL\par
+- descricao: VARCHAR(500), NULL\par
+Indices:\par
+- idx_prestador_especialidade (especialidade)\par
+\par
+\b Tabela: categorias\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- nome: VARCHAR(255), NULL\par
+\par
+\b Tabela: servico_catalogo\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- titulo: VARCHAR(255), NULL\par
+- descricao: VARCHAR(255), NULL\par
+- id_categoria: BIGINT, FK -> categorias.id\par
+\par
+\b Tabela: enderecos\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_usuario: BIGINT, FK -> usuarios.id\par
+- rua: VARCHAR(255), NULL\par
+- numero: VARCHAR(255), NULL\par
+- cidade: VARCHAR(255), NULL\par
+- bairro: VARCHAR(255), NULL\par
+- estado: VARCHAR(255), NULL\par
+- cep: VARCHAR(255), NULL\par
+\par
+\b Tabela: pedidos\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_usuario: BIGINT, NOT NULL, FK -> usuarios.id\par
+- id_servico: BIGINT, FK -> servico_catalogo.id\par
+- id_endereco: BIGINT, FK -> enderecos.id\par
+- titulo: VARCHAR(160), NOT NULL\par
+- descricao: VARCHAR(2000), NOT NULL\par
+- localizacao: VARCHAR(160), NOT NULL\par
+- status: VARCHAR(30), NOT NULL (enum StatusPedido)\par
+- contato_nome: VARCHAR(120), NULL\par
+- contato_email: VARCHAR(160), NULL\par
+- contato_telefone: VARCHAR(20), NULL\par
+Indices:\par
+- idx_pedidos_usuario (id_usuario)\par
+- idx_pedidos_status (status)\par
+- idx_pedidos_servico (id_servico)\par
+\par
+\b Tabela: propostas\b0\par
+PK: id (INTEGER, identity)\par
+Colunas:\par
+- id: INTEGER, PK\par
+- id_pedido: BIGINT, NOT NULL, FK -> pedidos.id\par
+- id_prestador: BIGINT, NOT NULL, FK -> usuarios.id\par
+- preco_proposto: DECIMAL(12,2), NOT NULL\par
+- status: VARCHAR(20), NOT NULL (enum StatusProposta)\par
+- mensagem: VARCHAR(1000), NULL\par
+Restricao unica:\par
+- uk_propostas_pedido_prestador (id_pedido, id_prestador)\par
+Indices:\par
+- idx_propostas_pedido (id_pedido)\par
+- idx_propostas_prestador (id_prestador)\par
+- idx_propostas_status (status)\par
+\par
+\b Tabela: pagamentos\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_usuario: BIGINT, NOT NULL, FK -> usuarios.id\par
+- id_pedido: BIGINT, NOT NULL, FK -> pedidos.id\par
+- valor: DECIMAL(12,2), NOT NULL\par
+- status: VARCHAR(20), NOT NULL (enum StatusPagamento)\par
+- metodo: VARCHAR(20), NOT NULL (enum MetodoPagamento)\par
+Indices:\par
+- idx_pagamentos_usuario (id_usuario)\par
+- idx_pagamentos_pedido (id_pedido)\par
+- idx_pagamentos_status (status)\par
+\par
+\b Tabela: ofertas\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_usuario: BIGINT, FK -> usuarios.id\par
+- id_servico: BIGINT, FK -> servico_catalogo.id\par
+- titulo: VARCHAR(255), NULL\par
+- descricao: VARCHAR(255), NULL\par
+- localizacao: VARCHAR(255), NULL\par
+\par
+\b Tabela: avaliacoes\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_avaliador: BIGINT, NOT NULL, FK -> usuarios.id\par
+- id_avaliado: BIGINT, NOT NULL, FK -> usuarios.id\par
+- nota: BIGINT, NOT NULL\par
+- comentario: VARCHAR(1000), NULL\par
+- data: TIMESTAMP, NOT NULL\par
+Indices:\par
+- idx_avaliacoes_avaliado (id_avaliado)\par
+- idx_avaliacoes_avaliador (id_avaliador)\par
+- idx_avaliacoes_data (data)\par
+\par
+\b Tabela: notificacoes\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_usuario: BIGINT, FK -> usuarios.id\par
+- tipo: VARCHAR(255), NULL\par
+- mensagem: VARCHAR(255), NULL\par
+- data: TIMESTAMP, NULL\par
+- lida: BOOLEAN, NULL\par
+\par
+\b Tabela: participantes\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_user_cliente: BIGINT, FK -> usuarios.id\par
+- id_user_prestador: BIGINT, FK -> usuarios.id\par
+- aceite_cliente: BOOLEAN, NULL\par
+- aceite_prestador: BOOLEAN, NULL\par
+- aceite_timestamp: TIMESTAMP, NULL\par
+- pedido_referencia: BIGINT, NULL\par
+- titulo_servico: VARCHAR(255), NULL\par
+\par
+\b Tabela: mensagens\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_participante: BIGINT, FK -> participantes.id\par
+- id_remetente: BIGINT, FK -> usuarios.id\par
+- conteudo: VARCHAR(255), NULL\par
+- tipo: VARCHAR(255), NULL\par
+- timestamp: TIMESTAMP, NULL\par
+- lida: BOOLEAN, NULL\par
+\par
+\b Tabela: contratos\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_pedido: BIGINT, FK -> pedidos.id\par
+- id_cliente: BIGINT, FK -> usuarios.id\par
+- id_prestador: BIGINT, FK -> usuarios.id\par
+- id_participante: BIGINT, FK -> participantes.id\par
+- termos: VARCHAR(255), NULL\par
+- status: VARCHAR(255), NULL\par
+\par
+\b Tabela: agendas\b0\par
+PK: id (BIGINT, identity)\par
+Colunas:\par
+- id: BIGINT, PK\par
+- id_agenda: BIGINT, FK -> usuarios.id\par
+- data: DATE, NULL\par
+- hora_inicio: TIME, NULL\par
+- hora_fim: TIME, NULL\par
+- disponivel: BOOLEAN, NULL\par
+\par
+\b 3) Views definidas em data.sql\b0\par
+- vw_clientes_usuario\par
+- vw_prestadores_usuario\par
+- endereco\par
+- pagamento\par
+- oferta\par
+- servicos_catalogo\par
+- pedidos_detalhados\par
+- propostas_detalhadas\par
+- avaliacoes_detalhadas\par
+\par
+\b 4) Dados Iniciais (seed) atualmente\b0\par
+Tabela categorias:\par
+- Tecnologia e Informatica\par
+- Reformas e Reparos\par
+- Aulas Particulares\par
+\par
+Tabela servico_catalogo:\par
+- Formatacao de Computador (categoria 1)\par
+- Instalacao Eletrica (categoria 2)\par
+- Aula de Ingles (categoria 3)\par
+\par
+\b 5) Observacoes para o mapa ER\b0\par
+- A entidade usuarios e tabela base de cliente/prestador (heranca JOINED).\par
+- propostas referencia usuarios como prestador em id_prestador.\par
+- participantes registra dupla cliente/prestador para conversa/contrato.\par
+- agendas usa coluna id_agenda como FK para usuarios (nome da FK pode ser renomeado para id_usuario se desejar padrao).\par
+\par
+\b Fim do documento\b0\par
+}

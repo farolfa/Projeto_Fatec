@@ -1,0 +1,148 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}{\f1 Consolas;}}
+\paperw11907\paperh16840\margl1134\margr1134\margt1134\margb1134
+\fs24
+\b MAPA DO BANCO - PROJETO FATEC (VERSAO IMPRESSAO)\b0\par
+\par
+Data da conferencia: 23/03/2026\par
+Base de validacao: entidades JPA em src/main/java/com/fatec/demo/model + src/main/resources/data.sql\par
+\par
+\b CONFERENCIA GERAL\b0\par
+- Total de tabelas mapeadas por entidades: 17\par
+- Total de views no data.sql: 9\par
+- Tabelas seed com inserts: categorias, servico_catalogo\par
+- Status: CONFERIDO\par
+- Recomendacao tecnica: manter o modelo atual para preservar o funcionamento completo do site\par
+\par
+\b 1. usuarios\b0\par
+PK: id\par
+Campos: nome, email (unique), senha, ativo, tipo, cpf (unique), telefone, endereco, estado, cep, bio, foto, cidade\par
+Indices: idx_usuarios_tipo, idx_usuarios_ativo\par
+\par
+\b 2. cliente\b0\par
+PK/FK: id_usuario -> usuarios.id\par
+Campos: apelido, observacao\par
+\par
+\b 3. prestador\b0\par
+PK/FK: id_usuario -> usuarios.id\par
+Campos: nome_profissional, especialidade, descricao\par
+Indice: idx_prestador_especialidade\par
+\par
+\b 4. categorias\b0\par
+PK: id\par
+Campos: nome\par
+\par
+\b 5. servico_catalogo\b0\par
+PK: id\par
+FK: id_categoria -> categorias.id\par
+Campos: titulo, descricao\par
+\par
+\b 6. servicos_oferecidos\b0\par
+PK: id\par
+FKs: id_usuario -> usuarios.id, id_servico -> servico_catalogo.id\par
+Campos: preco_medio, descricao\par
+\par
+\b 7. enderecos\b0\par
+PK: id\par
+FK: id_usuario -> usuarios.id\par
+Campos: rua, numero, cidade, bairro, estado, cep\par
+\par
+\b 8. pedidos\b0\par
+PK: id\par
+FKs: id_usuario -> usuarios.id, id_servico -> servico_catalogo.id, id_endereco -> enderecos.id\par
+Campos: titulo, descricao, localizacao, status, contato_nome, contato_email, contato_telefone\par
+Indices: idx_pedidos_usuario, idx_pedidos_status, idx_pedidos_servico\par
+\par
+\b 9. propostas\b0\par
+PK: id\par
+FKs: id_pedido -> pedidos.id, id_prestador -> usuarios.id\par
+Campos: preco_proposto, status, mensagem\par
+Unique: uk_propostas_pedido_prestador (id_pedido, id_prestador)\par
+Indices: idx_propostas_pedido, idx_propostas_prestador, idx_propostas_status\par
+\par
+\b 10. pagamentos\b0\par
+PK: id\par
+FKs: id_usuario -> usuarios.id, id_pedido -> pedidos.id\par
+Campos: valor, status, metodo\par
+Indices: idx_pagamentos_usuario, idx_pagamentos_pedido, idx_pagamentos_status\par
+\par
+\b 11. ofertas\b0\par
+PK: id\par
+FKs: id_usuario -> usuarios.id, id_servico -> servico_catalogo.id\par
+Campos: titulo, descricao, localizacao\par
+\par
+\b 12. avaliacoes\b0\par
+PK: id\par
+FKs: id_avaliador -> usuarios.id, id_avaliado -> usuarios.id\par
+Campos: nota, comentario, data\par
+Indices: idx_avaliacoes_avaliado, idx_avaliacoes_avaliador, idx_avaliacoes_data\par
+\par
+\b 13. notificacoes\b0\par
+PK: id\par
+FK: id_usuario -> usuarios.id\par
+Campos: tipo, mensagem, data, lida\par
+\par
+\b 14. participantes\b0\par
+PK: id\par
+FKs: id_user_cliente -> usuarios.id, id_user_prestador -> usuarios.id\par
+Campos: aceite_cliente, aceite_prestador, aceite_timestamp, pedido_referencia, titulo_servico\par
+\par
+\b 15. mensagens\b0\par
+PK: id\par
+FKs: id_participante -> participantes.id, id_remetente -> usuarios.id\par
+Campos: conteudo, tipo, timestamp, lida\par
+\par
+\b 16. contratos\b0\par
+PK: id\par
+FKs: id_pedido -> pedidos.id, id_cliente -> usuarios.id, id_prestador -> usuarios.id, id_participante -> participantes.id\par
+Campos: termos, status\par
+\par
+\b 17. agendas\b0\par
+PK: id\par
+FK: id_agenda -> usuarios.id\par
+Campos: data, hora_inicio, hora_fim, disponivel\par
+\par
+\page
+\b VIEWS (data.sql)\b0\par
+1) vw_clientes_usuario\par
+2) vw_prestadores_usuario\par
+3) endereco\par
+4) pagamento\par
+5) oferta\par
+6) servicos_catalogo\par
+7) pedidos_detalhados\par
+8) propostas_detalhadas\par
+9) avaliacoes_detalhadas\par
+\par
+\b DECISAO RECOMENDADA PARA MANTER O SITE FUNCIONAL\b0\par
+- O sistema deve permanecer com o modelo atual, pois ele esta alinhado com as entidades, controllers, services e telas do frontend.\par
+- Voltar integralmente ao modelo antigo exigiria refatoracao de backend, frontend, validacoes, seeds e consultas.\par
+- Para evitar regressao, o modelo antigo deve ser tratado como referencia conceitual e o modelo atual como base oficial da aplicacao.\par
+\par
+\b COMPARATIVO: MODELO ORIGINAL X MODELO ATUAL\b0\par
+Usuario original: tinha dataCadastro; no atual esse campo nao existe, mas existem endereco, estado e cep direto na tabela usuarios.\par
+Cliente original: apenas relacionamento com usuario; no atual possui apelido e observacao.\par
+Prestador original: previa experiencia, verificado e qtdServicos; no atual existem nome_profissional, especialidade e descricao.\par
+Categoria original: previa descricao; no atual existe apenas nome.\par
+Status original: seria uma tabela; no atual os status sao enums nas entidades.\par
+Servico original: foi dividido em servico_catalogo e servicos_oferecidos.\par
+Endereco original: previa complemento; no atual esse campo nao existe.\par
+Pedido original: previa cliente_id, proposta_id, dataCriacao e dataAtualizacao; no atual usa id_usuario, nao possui proposta_id e inclui campos de contato.\par
+Proposta original: previa dataEnvio e validade; no atual esses campos nao existem.\par
+ServicoProposta original: nao existe no modelo atual.\par
+Conversa original: nao existe no modelo atual; a aproximacao funcional foi distribuida entre participantes e mensagens.\par
+Mensagem original: usaria conversa_id; no atual usa id_participante.\par
+Avaliacao original: previa pedido_id em uma das versoes; no atual avaliacoes relacionam avaliador e avaliado diretamente.\par
+Acordo original: no atual a logica mais proxima esta em participantes, com aceite_cliente, aceite_prestador e aceite_timestamp.\par
+Tabelas novas no atual: pagamentos, ofertas, contratos, agendas.\par
+\par
+\b CHECKLIST FINAL DE CONFERENCIA\b0\par
+[OK] 17 tabelas de entidades listadas\par
+[OK] 9 views listadas\par
+[OK] Heranca JOINED de usuarios refletida em cliente/prestador\par
+[OK] Chaves unicas principais registradas (email, cpf, proposta por pedido+prestador)\par
+[OK] Documento anterior ajustado nesta versao com inclusao de servicos_oferecidos\par
+[OK] Recomendacao registrada: manter o modelo atual para nao quebrar o site\par
+\par
+\b Fim\b0\par
+}
