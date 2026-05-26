@@ -1,1 +1,0 @@
-cd /home/raul/Downloads/ProjetoF/FrontDoProj/project && npm run dev
