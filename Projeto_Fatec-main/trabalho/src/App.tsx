@@ -2,6 +2,7 @@
 import { router } from "./routes";
 import { useEffect, Suspense } from "react";
 import { clearSessionUser, getSessionUser } from "./services/auth";
+import { ColorVisionAccessibility } from "./components/color-vision-accessibility";
 
 export default function App() {
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function App() {
   return (
     <Suspense fallback={null}>
       <RouterProvider router={router} />
+      <ColorVisionAccessibility />
     </Suspense>
   );
 }

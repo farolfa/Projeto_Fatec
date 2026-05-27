@@ -80,6 +80,100 @@
   --sidebar-ring: #7fb2ff;
 }
 
+html[data-color-vision='deuteranopia'] {
+  --primary: #1b69d4;
+  --primary-foreground: #f8fbff;
+  --secondary: #f7cd66;
+  --secondary-foreground: #3e2f06;
+  --accent: #35a55b;
+  --accent-foreground: #072612;
+  --destructive: #7b4bbb;
+  --destructive-foreground: #ffffff;
+  --ring: #1b69d4;
+  --chart-1: #1b69d4;
+  --chart-2: #f2a93b;
+  --chart-3: #35a55b;
+  --chart-4: #7b4bbb;
+  --chart-5: #0d7f9d;
+}
+
+html[data-color-vision='protanopia'] {
+  --primary: #1e5ecc;
+  --primary-foreground: #f8fbff;
+  --secondary: #f4d35e;
+  --secondary-foreground: #332708;
+  --accent: #14877f;
+  --accent-foreground: #e9fffc;
+  --destructive: #5f6de0;
+  --destructive-foreground: #ffffff;
+  --ring: #1e5ecc;
+  --chart-1: #1e5ecc;
+  --chart-2: #f0b53f;
+  --chart-3: #14877f;
+  --chart-4: #5f6de0;
+  --chart-5: #2a8f5c;
+}
+
+html[data-color-vision='tritanopia'] {
+  --primary: #0f6a7f;
+  --primary-foreground: #f3fcff;
+  --secondary: #f09d38;
+  --secondary-foreground: #3d2206;
+  --accent: #1d8d5c;
+  --accent-foreground: #f0fff6;
+  --destructive: #bf4f3a;
+  --destructive-foreground: #ffffff;
+  --ring: #0f6a7f;
+  --chart-1: #0f6a7f;
+  --chart-2: #f09d38;
+  --chart-3: #1d8d5c;
+  --chart-4: #2058b8;
+  --chart-5: #bf4f3a;
+}
+
+html[data-color-vision='high-contrast'] {
+  --background: #ffffff;
+  --foreground: #111827;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #003c99;
+  --primary-foreground: #ffffff;
+  --secondary: #f5c02f;
+  --secondary-foreground: #1f2937;
+  --muted: #f3f4f6;
+  --muted-foreground: #1f2937;
+  --accent: #006b5f;
+  --accent-foreground: #ffffff;
+  --destructive: #9f1239;
+  --destructive-foreground: #ffffff;
+  --border: rgba(17, 24, 39, 0.36);
+  --input-background: #ffffff;
+  --ring: #003c99;
+  --chart-1: #003c99;
+  --chart-2: #d97706;
+  --chart-3: #006b5f;
+  --chart-4: #7c3aed;
+  --chart-5: #9f1239;
+}
+
+#root.color-vision-deuteranopia {
+  filter: contrast(1.06) saturate(0.86) hue-rotate(-14deg);
+}
+
+#root.color-vision-protanopia {
+  filter: contrast(1.07) saturate(0.82) hue-rotate(12deg);
+}
+
+#root.color-vision-tritanopia {
+  filter: contrast(1.08) saturate(0.84) hue-rotate(-26deg);
+}
+
+#root.color-vision-high-contrast {
+  filter: contrast(1.18) saturate(0.9);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -131,7 +225,8 @@
     font-family: var(--font-sans);
     line-height: 1.45;
     background-image: none;
-    background-color: #f4f8ff;
+    background-color: var(--background);
+    transition: filter 180ms ease, background-color 180ms ease, color 180ms ease;
   }
 
   /**
@@ -192,6 +287,12 @@
 
   a {
     transition: color 180ms ease;
+  }
+
+  html[data-color-vision] a {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.14em;
   }
 }
 
