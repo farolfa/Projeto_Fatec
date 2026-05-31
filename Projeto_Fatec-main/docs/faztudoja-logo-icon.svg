@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Icone FazTudoJA">
+  <rect x="0" y="0" width="48" height="48" rx="10" fill="#ffffff"/>
+  <path d="M24 8c-6 5-9 10-9 15a9 9 0 0 0 18 0c0-5-3-10-9-15Z" fill="#fb923c"/>
+  <path d="M24 14v20" stroke="#ea580c" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M24 24c4-2 8-2 11 0" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+  <path d="M24 27c-4-2-8-2-11 0" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/>
+</svg>
