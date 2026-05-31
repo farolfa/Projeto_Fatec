@@ -9,4 +9,6 @@ import com.fatec.demo.model.TicketSuporte;
 public interface TicketSuporteRepository extends JpaRepository<TicketSuporte, Long> {
 
     List<TicketSuporte> findByUsuarioIdOrderByCriadoEmDesc(Long usuarioId);
+
+    List<TicketSuporte> findByUsuarioId(Long usuarioId);
 }

@@ -26,6 +26,7 @@ import com.fatec.demo.repository.AvaliacaoRepository;
 import com.fatec.demo.repository.CategoriaRepository;
 import com.fatec.demo.repository.PedidoRepository;
 import com.fatec.demo.repository.UsuarioRepository;
+import com.fatec.demo.service.UsuarioService;
 
 @RestController
 @RequestMapping("/admin")
@@ -44,6 +45,9 @@ public class AdminController {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private UsuarioService usuarioService;
 
     /** Verifica se o adminId fornecido é realmente um ADMIN */
     private boolean isAdmin(Long adminId) {
@@ -137,6 +141,22 @@ public class AdminController {
         if (!statusValido) return ResponseEntity.badRequest().body("Status inválido");
 
         return usuarioRepository.findById(id).map(u -> {
+            Integer statusAtual = u.getStatus();
+
+            if (statusAtual != null && statusAtual == Usuario.STATUS_ADMIN_PRINCIPAL && status != Usuario.STATUS_ADMIN_PRINCIPAL) {
+                long totalPrincipais = usuarioRepository.countByStatus(Usuario.STATUS_ADMIN_PRINCIPAL);
+                if (totalPrincipais <= 1) {
+                    return ResponseEntity.badRequest().body("Não é possível remover o último ADMIN PRINCIPAL");
+                }
+            }
+
+            if (status == Usuario.STATUS_ADMIN_PRINCIPAL && (statusAtual == null || statusAtual != Usuario.STATUS_ADMIN_PRINCIPAL)) {
+                long totalPrincipais = usuarioRepository.countByStatus(Usuario.STATUS_ADMIN_PRINCIPAL);
+                if (totalPrincipais >= 1) {
+                    return ResponseEntity.badRequest().body("Já existe um ADMIN PRINCIPAL ativo");
+                }
+            }
+
             u.setStatus(status);
             usuarioRepository.save(u);
             u.setSenha(null);
@@ -156,11 +176,14 @@ public class AdminController {
         }
 
         try {
-            usuarioRepository.deleteById(id);
+            usuarioService.delete(id);
             return ResponseEntity.ok("Usuário excluído");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Erro ao excluir usuário " + id, e);
-            return ResponseEntity.status(500).body("Erro ao excluir usuário (pode ter registros vinculados)");
+            String reason = e.getMessage() == null || e.getMessage().isBlank()
+                    ? "falha interna"
+                    : e.getMessage();
+            return ResponseEntity.status(500).body("Erro ao excluir usuário: " + reason);
         }
     }
 

@@ -68,6 +68,8 @@ const CITY_FALLBACK_BY_STATE: Record<string, string[]> = {
   TO: ["Palmas", "Araguaina", "Gurupi"],
 };
 
+const MAX_PROFILE_PHOTO_BYTES = 2 * 1024 * 1024;
+
 function onlyDigits(value: string): string {
   return value.replace(/\D/g, "");
 }
@@ -246,6 +248,14 @@ export function Access() {
   const handleProfilePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_PROFILE_PHOTO_BYTES) {
+      setError("A foto deve ter no maximo 2 MB. Escolha uma imagem menor.");
+      event.target.value = "";
+      return;
+    }
+
+    setError("");
 
     const reader = new FileReader();
     reader.onload = () => {

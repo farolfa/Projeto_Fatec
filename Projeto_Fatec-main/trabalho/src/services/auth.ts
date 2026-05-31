@@ -2,6 +2,7 @@ import { Usuario } from "./api";
 
 const SESSION_KEY = "faztudoja_session_user";
 const ACTIVE_PROFILE_KEY = "faztudoja_active_profile";
+const SESSION_FOTO_MAX_CHARS = 120000;
 
 function clearLegacyPersistentSession(): void {
 	localStorage.removeItem(SESSION_KEY);
@@ -22,10 +23,38 @@ export function isAdmin(user: Usuario | null): boolean {
 	return normalizeTipo(user?.tipo) === "admin";
 }
 
+function isQuotaExceededError(error: unknown): boolean {
+	return (
+		error instanceof DOMException &&
+		(error.name === "QuotaExceededError" || error.name === "NS_ERROR_DOM_QUOTA_REACHED")
+	);
+}
+
+function sanitizeUserForSession(user: Usuario, keepFoto: boolean): Usuario {
+	const sanitized: Usuario = { ...user };
+
+	if (!keepFoto || (sanitized.foto && sanitized.foto.length > SESSION_FOTO_MAX_CHARS)) {
+		delete sanitized.foto;
+	}
+
+	return sanitized;
+}
+
 export function saveSessionUser(user: Usuario): void {
 	clearLegacyPersistentSession();
 	clearActiveProfile();
-	sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+
+	const preferredUser = sanitizeUserForSession(user, true);
+	try {
+		sessionStorage.setItem(SESSION_KEY, JSON.stringify(preferredUser));
+	} catch (error) {
+		if (!isQuotaExceededError(error)) {
+			throw error;
+		}
+
+		const fallbackUser = sanitizeUserForSession(user, false);
+		sessionStorage.setItem(SESSION_KEY, JSON.stringify(fallbackUser));
+	}
 }
 
 export function saveActiveProfile(profile: PerfilAtivo): void {

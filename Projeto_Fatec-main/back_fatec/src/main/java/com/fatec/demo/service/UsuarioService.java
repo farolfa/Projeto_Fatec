@@ -1,18 +1,35 @@
 package com.fatec.demo.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fatec.demo.model.Endereco;
+import com.fatec.demo.model.Participante;
 import com.fatec.demo.model.Telefone;
+import com.fatec.demo.model.TicketSuporte;
 import com.fatec.demo.model.Usuario;
+import com.fatec.demo.repository.AvaliacaoRepository;
+import com.fatec.demo.repository.ClienteRepository;
 import com.fatec.demo.repository.EnderecoRepository;
+import com.fatec.demo.repository.FavoritoRepository;
+import com.fatec.demo.repository.MensagemRepository;
+import com.fatec.demo.repository.NotificacaoLidaExternaRepository;
+import com.fatec.demo.repository.NotificacaoRepository;
+import com.fatec.demo.repository.ParticipanteRepository;
+import com.fatec.demo.repository.PedidoRepository;
+import com.fatec.demo.repository.PrestadorRepository;
+import com.fatec.demo.repository.PropostaRepository;
+import com.fatec.demo.repository.ServicoOferecidoRepository;
 import com.fatec.demo.repository.TelefoneRepository;
+import com.fatec.demo.repository.TicketSuporteRepository;
 import com.fatec.demo.repository.UsuarioRepository;
 
 import jakarta.annotation.PostConstruct;
@@ -30,6 +47,45 @@ public class UsuarioService {
 
     @Autowired
     private TelefoneRepository telefoneRepository;
+
+    @Autowired
+    private AvaliacaoRepository avaliacaoRepository;
+
+    @Autowired
+    private PropostaRepository propostaRepository;
+
+    @Autowired
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private ParticipanteRepository participanteRepository;
+
+    @Autowired
+    private MensagemRepository mensagemRepository;
+
+    @Autowired
+    private TicketSuporteRepository ticketSuporteRepository;
+
+    @Autowired
+    private NotificacaoRepository notificacaoRepository;
+
+    @Autowired
+    private NotificacaoLidaExternaRepository notificacaoLidaExternaRepository;
+
+    @Autowired
+    private FavoritoRepository favoritoRepository;
+
+    @Autowired
+    private ServicoOferecidoRepository servicoOferecidoRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PrestadorRepository prestadorRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @PostConstruct
     public void normalizeUserStatusColumn() {
@@ -512,14 +568,105 @@ public class UsuarioService {
             if (!repository.existsById(id)) {
                 throw new IllegalArgumentException("Usuário não encontrado com ID: " + id);
             }
+
+            // Remove mensagens ligadas ao usuário (como remetente e nas conversas em que participa).
+            List<Participante> participantes = participanteRepository
+                .findByUsuarioClienteIdOrUsuarioPrestadorId(id, id);
+            List<Long> participanteIds = participantes.stream()
+                .map(Participante::getId)
+                .collect(Collectors.toList());
+
+            if (!participanteIds.isEmpty()) {
+                mensagemRepository.deleteByParticipanteIdIn(participanteIds);
+            }
+            mensagemRepository.deleteByRemetenteId(id);
+            participanteRepository.deleteByUsuarioClienteIdOrUsuarioPrestadorId(id, id);
+
+            // Remove propostas que o usuário recebeu em pedidos próprios e as propostas enviadas por ele.
+            propostaRepository.deleteByPedidoUsuarioId(id);
+            propostaRepository.deleteByPrestadorId(id);
+
+            // Remove entidades relacionadas diretamente ao usuário.
+            pedidoRepository.deleteByUsuarioId(id);
+            avaliacaoRepository.deleteByAvaliadorIdOrAvaliadoId(id, id);
+            favoritoRepository.deleteByUsuarioIdOrPrestadorId(id, id);
+            notificacaoRepository.deleteByUsuarioId(id);
+            notificacaoLidaExternaRepository.deleteAllByUsuarioId(id);
+            servicoOferecidoRepository.deleteByUsuarioId(id);
+
+            List<TicketSuporte> tickets = ticketSuporteRepository.findByUsuarioId(id);
+            if (!tickets.isEmpty()) {
+                ticketSuporteRepository.deleteAll(tickets);
+            }
+
+            telefoneRepository.deleteByUsuarioId(id);
+            enderecoRepository.deleteByUsuarioId(id);
+
+            if (prestadorRepository.existsById(id)) {
+                prestadorRepository.deleteById(id);
+            }
+            if (clienteRepository.existsById(id)) {
+                clienteRepository.deleteById(id);
+            }
+
             repository.deleteById(id);
             logger.log(Level.INFO, "Usuário deletado com ID: {0}", id);
         } catch (IllegalArgumentException e) {
             logger.log(Level.WARNING, "Erro de validação ao deletar usuário", e);
             throw e;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Erro ao deletar usuário com ID: " + id, e);
-            throw new RuntimeException("Erro ao deletar usuário do banco de dados", e);
+            logger.log(Level.WARNING, "Falha na exclusão padrão do usuário. Tentando fallback SQL. ID=" + id, e);
+            try {
+                deleteWithSqlFallback(id);
+                logger.log(Level.INFO, "Usuário deletado com fallback SQL. ID={0}", id);
+            } catch (Exception fallbackEx) {
+                logger.log(Level.SEVERE, "Erro ao deletar usuário com ID: " + id + " mesmo com fallback SQL", fallbackEx);
+                throw new RuntimeException("Erro ao deletar usuário do banco de dados", fallbackEx);
+            }
         }
+    }
+
+    private void deleteWithSqlFallback(Long id) {
+        final String fkRefsSql = """
+            SELECT t.name AS table_name, c.name AS column_name
+            FROM sys.foreign_key_columns fkc
+            INNER JOIN sys.tables rt ON rt.object_id = fkc.referenced_object_id
+            INNER JOIN sys.tables t ON t.object_id = fkc.parent_object_id
+            INNER JOIN sys.columns c ON c.object_id = fkc.parent_object_id AND c.column_id = fkc.parent_column_id
+            WHERE rt.name = 'usuarios'
+            ORDER BY t.name, c.name
+            """;
+
+        // Executa em múltiplas passagens para resolver cadeias de FKs (ex.: propostas -> pedidos -> usuarios).
+        for (int pass = 1; pass <= 5; pass++) {
+            List<Map<String, Object>> refs = jdbcTemplate.queryForList(fkRefsSql);
+
+            for (Map<String, Object> ref : refs) {
+                String table = String.valueOf(ref.get("table_name"));
+                String column = String.valueOf(ref.get("column_name"));
+
+                String deleteSql = "DELETE FROM [" + table + "] WHERE [" + column + "] = ?";
+                try {
+                    jdbcTemplate.update(deleteSql, id);
+                } catch (Exception ex) {
+                    // Ignora nesta passagem e tenta novamente após outras dependências serem removidas.
+                }
+            }
+
+            jdbcTemplate.update("DELETE FROM notificacoes_lidas_externas WHERE usuario_id = ?", id);
+            jdbcTemplate.update("DELETE FROM usuarios WHERE id = ?", id);
+
+            Integer remaining = jdbcTemplate.queryForObject(
+                "SELECT COUNT(1) FROM usuarios WHERE id = ?",
+                Integer.class,
+                id
+            );
+
+            if (remaining == null || remaining == 0) {
+                return;
+            }
+        }
+
+        throw new IllegalStateException("Não foi possível remover vínculos restantes do usuário");
     }
 }

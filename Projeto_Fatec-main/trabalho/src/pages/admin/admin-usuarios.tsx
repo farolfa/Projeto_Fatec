@@ -11,7 +11,7 @@ import {
   updateUsuarioStatus,
 } from "../../services/admin-api";
 import type { Usuario } from "../../services/api";
-import { Search, ShieldCheck, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
+import { Search, ShieldCheck, ToggleLeft, ToggleRight, Trash2, Undo2 } from "lucide-react";
 
 function resolveStatus(u: Usuario): number {
   if (typeof u.status === "number") return u.status;
@@ -94,6 +94,24 @@ export function AdminUsuarios() {
     }
   };
 
+  const handleDemoteAdmin = async (uid: number, nome: string, currentStatus: number) => {
+    if (!user?.id) return;
+
+    const nextStatus = currentStatus === 11 ? 10 : 2;
+    const nextLabel = nextStatus === 10 ? "ADMIN" : "CLIENTE";
+    if (!window.confirm(`Rebaixar o usuário \"${nome}\" para ${nextLabel}?`)) return;
+
+    setActionId(uid);
+    try {
+      const updated = await updateUsuarioStatus(uid, nextStatus, user.id);
+      setUsuarios((prev) => prev.map((u) => (u.id === uid ? updated : u)));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Erro ao rebaixar usuário");
+    } finally {
+      setActionId(null);
+    }
+  };
+
   const handleDelete = async (uid: number, nome: string) => {
     if (!user?.id) return;
     if (!window.confirm(`Excluir usuário \"${nome}\"? Esta ação não pode ser desfeita.`)) return;
@@ -155,6 +173,7 @@ export function AdminUsuarios() {
                   const canManageTarget = !targetIsAdmin || isPrincipal;
                   const canPromote = isPrincipal && status < 10;
                   const isSelf = u.id === user?.id;
+                  const canDemoteAdmin = isPrincipal && status >= 10 && !isSelf;
 
                   return (
                     <tr key={u.id} className="border-b border-gray-700/50 hover:bg-gray-700/30 transition-colors">
@@ -183,6 +202,19 @@ export function AdminUsuarios() {
                               title="Tornar Admin"
                             >
                               <ShieldCheck size={16} />
+                            </Button>
+                          )}
+
+                          {canDemoteAdmin && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              disabled={actionId === u.id}
+                              onClick={() => void handleDemoteAdmin(u.id, u.nome, status)}
+                              className="text-gray-300 hover:text-amber-300 h-7 px-2"
+                              title={status === 11 ? "Rebaixar para ADMIN" : "Rebaixar para CLIENTE"}
+                            >
+                              <Undo2 size={16} />
                             </Button>
                           )}
 
