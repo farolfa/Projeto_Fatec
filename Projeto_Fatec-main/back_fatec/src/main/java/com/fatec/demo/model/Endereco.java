@@ -31,14 +31,8 @@ public class Endereco {
     @Column(nullable = false, length = 200)
     private String rua;
 
-    @Column(length = 10)
-    private String numero;
-
     @Column(nullable = false, length = 120)
     private String cidade;
-
-    @Column(length = 100)
-    private String bairro;
 
     @Column(nullable = false, length = 2)
     private String estado;
@@ -46,20 +40,15 @@ public class Endereco {
     @Column(nullable = false, length = 8)
     private String cep;
 
-    /** Indica se é o endereço principal do usuário. */
-    @Column(nullable = false)
-    private boolean principal = true;
-
-    public Endereco(Long id, Usuario usuario, String rua, String numero, String cidade,String bairro, String estado, String cep) {
+    public Endereco(Long id, Usuario usuario, String rua, String cidade, String estado, String cep) {
         this.id = id;
         this.usuario = usuario;
         this.rua = rua;
-        this.numero = numero;
         this.cidade = cidade;
-        this.bairro = bairro;
         this.estado = estado;
         this.cep = cep;
     }
+
     public Endereco() {
     }
     public Long getId() {
@@ -80,23 +69,11 @@ public class Endereco {
     public void setRua(String rua) {
         this.rua = rua;
     }
-    public String getNumero() {
-        return numero;
-    }
-    public void setNumero(String numero) {
-        this.numero = numero;
-    }
     public String getCidade() {
         return cidade;
     }
     public void setCidade(String cidade) {
         this.cidade = cidade;
-    }
-    public String getBairro() {
-        return bairro;
-    }
-    public void setBairro(String bairro) {
-        this.bairro = bairro;
     }
     public String getEstado() {
         return estado;
@@ -111,6 +88,4 @@ public class Endereco {
         this.cep = cep;
     }
 
-    public boolean isPrincipal() { return principal; }
-    public void setPrincipal(boolean principal) { this.principal = principal; }
 }

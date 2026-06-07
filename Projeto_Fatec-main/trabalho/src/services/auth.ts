@@ -1,11 +1,17 @@
 import { Usuario } from "./api";
 
 const SESSION_KEY = "faztudoja_session_user";
+const SESSION_FOTO_KEY = "faztudoja_session_user_foto";
 const ACTIVE_PROFILE_KEY = "faztudoja_active_profile";
-const SESSION_FOTO_MAX_CHARS = 120000;
+// Allow profile images up to ~3.5 MB as Base64, so users can keep the photo selected at cadastro.
+const SESSION_FOTO_MAX_CHARS = 3500000;
 
 function clearLegacyPersistentSession(): void {
 	localStorage.removeItem(SESSION_KEY);
+}
+
+function clearStoredSessionPhoto(): void {
+	localStorage.removeItem(SESSION_FOTO_KEY);
 }
 
 export type TipoUsuario = "cliente" | "prestador" | "admin";
@@ -43,17 +49,27 @@ function sanitizeUserForSession(user: Usuario, keepFoto: boolean): Usuario {
 export function saveSessionUser(user: Usuario): void {
 	clearLegacyPersistentSession();
 	clearActiveProfile();
+	clearStoredSessionPhoto();
 
 	const preferredUser = sanitizeUserForSession(user, true);
 	try {
 		sessionStorage.setItem(SESSION_KEY, JSON.stringify(preferredUser));
+		return;
 	} catch (error) {
 		if (!isQuotaExceededError(error)) {
 			throw error;
 		}
+	}
 
-		const fallbackUser = sanitizeUserForSession(user, false);
-		sessionStorage.setItem(SESSION_KEY, JSON.stringify(fallbackUser));
+	const fallbackUser = sanitizeUserForSession(user, false);
+	sessionStorage.setItem(SESSION_KEY, JSON.stringify(fallbackUser));
+
+	if (user.foto) {
+		try {
+			localStorage.setItem(SESSION_FOTO_KEY, user.foto);
+		} catch {
+			// Ignore secondary storage failures.
+		}
 	}
 }
 
@@ -103,6 +119,13 @@ export function getSessionUser(): Usuario | null {
 			return null;
 		}
 
+		if (!parsed.foto) {
+			const storedFoto = localStorage.getItem(SESSION_FOTO_KEY);
+			if (storedFoto) {
+				parsed.foto = storedFoto;
+			}
+		}
+
 		return parsed;
 	} catch {
 		return null;
@@ -111,6 +134,7 @@ export function getSessionUser(): Usuario | null {
 
 export function clearSessionUser(): void {
 	sessionStorage.removeItem(SESSION_KEY);
+	clearStoredSessionPhoto();
 	clearActiveProfile();
 	clearLegacyPersistentSession();
 }

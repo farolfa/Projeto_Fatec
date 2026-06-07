@@ -11,17 +11,17 @@ INSERT INTO servico_catalogo (titulo, descricao, id_categoria) VALUES
 
 -- 16. VIEWS DE CONSULTA NO H2
 CREATE VIEW vw_clientes_usuario AS
-SELECT id, nome, email, senha, ativo, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade
+SELECT id, nome, email, senha, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade
 FROM usuarios
 WHERE UPPER(tipo) = 'CLIENTE';
 
 CREATE VIEW vw_prestadores_usuario AS
-SELECT id, nome, email, senha, ativo, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade
+SELECT id, nome, email, senha, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade
 FROM usuarios
 WHERE UPPER(tipo) = 'PRESTADOR';
 
 CREATE VIEW endereco AS
-SELECT * FROM enderecos;
+SELECT id, rua, cidade, estado, cep, id_usuario FROM enderecos;
 
 CREATE VIEW servicos_catalogo AS
 SELECT s.id,
@@ -48,8 +48,6 @@ SELECT p.id,
 	   c.nome AS categoria,
 	   e.id AS endereco_id,
 	   e.rua,
-	   e.numero,
-	   e.bairro,
 	   e.cidade,
 	   e.estado,
 	   e.cep

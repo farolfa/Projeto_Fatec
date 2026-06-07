@@ -28,10 +28,10 @@ public class Prestador extends Usuario {
     public Prestador() {
     }
 
-    public Prestador(Long id, String nome, String email, String senha, boolean ativo, String tipo, String cpf,
+    public Prestador(Long id, String nome, String email, String senha, String tipo, String cpf,
             String telefone, String endereco, String estado, String cep, String bio, String foto, String cidade,
             String nomeProfissional, String especialidade, String descricao) {
-        super(id, nome, email, senha, ativo, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade);
+        super(id, nome, email, senha, tipo, cpf, telefone, endereco, estado, cep, bio, foto, cidade);
         this.nomeProfissional = nomeProfissional;
         this.especialidade = especialidade;
         this.descricao = descricao;

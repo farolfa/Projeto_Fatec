@@ -101,7 +101,7 @@ public class AdminController {
         if (!isAdmin(adminId)) return ResponseEntity.status(403).body("Acesso negado");
 
         try {
-            List<Usuario> usuarios = usuarioRepository.findAll();
+            List<Usuario> usuarios = usuarioRepository.findAllByOrderByIdAsc();
             usuarios.forEach(u -> u.setSenha(null)); // nunca expor senha
             return ResponseEntity.ok(usuarios);
         } catch (Exception e) {
@@ -119,7 +119,29 @@ public class AdminController {
             if (u.isAdmin() && !isAdminPrincipal(adminId)) {
                 return ResponseEntity.status(403).body("Somente ADMIN PRINCIPAL pode bloquear admins");
             }
-            u.setAtivo(!u.isAtivo());
+
+            boolean novoAtivo = !u.isAtivo();
+            if (!novoAtivo) {
+                if (u.isAdminPrincipal()) {
+                    return ResponseEntity.badRequest().body("Não é possível desativar o ADMIN PRINCIPAL");
+                }
+                u.setStatus(0);
+            } else {
+                if (u.isAdminPrincipal()) {
+                    u.setStatus(Usuario.STATUS_ADMIN_PRINCIPAL);
+                } else if (u.isAdmin()) {
+                    u.setStatus(Usuario.STATUS_ADMIN);
+                } else if (u.getTipoEnum() == null) {
+                    u.setStatus(Usuario.STATUS_CLIENTE);
+                } else {
+                    u.setStatus(switch (u.getTipoEnum()) {
+                        case PRESTADOR -> Usuario.STATUS_PRESTADOR;
+                        case CLIENTE -> Usuario.STATUS_CLIENTE;
+                        default -> Usuario.STATUS_CLIENTE;
+                    });
+                }
+            }
+
             usuarioRepository.save(u);
             u.setSenha(null);
             return ResponseEntity.ok(u);

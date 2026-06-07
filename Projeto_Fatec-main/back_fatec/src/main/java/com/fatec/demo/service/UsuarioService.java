@@ -272,11 +272,11 @@ public class UsuarioService {
             novoUsuario.setCep(cepNumerico);
             novoUsuario.setBio(usuario.getBio());
             novoUsuario.setFoto(usuario.getFoto());
-            novoUsuario.setAtivo(true);
             novoUsuario.setStatus(mapTipoToStatus(tipo));
 
             Usuario saved = repository.save(novoUsuario);
             syncEnderecoDoUsuario(saved);
+            hydrateTransientFields(saved);
 
             logger.log(Level.INFO, "Novo usuário registrado: {0} ({1})", new Object[]{emailNormalizado, tipo});
             return saved;
@@ -432,6 +432,7 @@ public class UsuarioService {
 
             Usuario atualizado = repository.save(existente);
             syncEnderecoDoUsuario(atualizado);
+            hydrateTransientFields(atualizado);
             logger.log(Level.INFO, "Usuário atualizado com sucesso: {0}", atualizado.getEmail());
             return atualizado;
         } catch (IllegalArgumentException e) {
@@ -468,6 +469,7 @@ public class UsuarioService {
         existente.setStatus(mapTipoToStatus(tipoNormalizado));
         Usuario atualizado = repository.save(existente);
         syncEnderecoDoUsuario(atualizado);
+        hydrateTransientFields(atualizado);
         return atualizado;
     }
 
@@ -476,18 +478,29 @@ public class UsuarioService {
             return;
         }
 
-        Endereco endereco = enderecoRepository
-            .findTopByUsuarioIdOrderByIdDesc(usuario.getId())
-            .orElseGet(Endereco::new);
+        String enderecoRua = usuario.getEndereco() != null ? usuario.getEndereco().trim() : null;
+        String enderecoCidade = usuario.getCidade() != null ? usuario.getCidade().trim() : null;
+        String enderecoEstado = usuario.getEstado() != null ? usuario.getEstado().trim() : null;
+        String enderecoCep = usuario.getCep() != null ? usuario.getCep().trim() : null;
 
+        boolean hasAddressData = (enderecoRua != null && !enderecoRua.isEmpty())
+            || (enderecoCidade != null && !enderecoCidade.isEmpty())
+            || (enderecoEstado != null && !enderecoEstado.isEmpty())
+            || (enderecoCep != null && !enderecoCep.isEmpty());
+
+        var enderecoOpt = enderecoRepository.findTopByUsuarioIdOrderByIdDesc(usuario.getId());
+        if (!hasAddressData) {
+            // Preserve existing address records when no address payload is provided.
+            syncTelefoneDoUsuario(usuario);
+            return;
+        }
+
+        Endereco endereco = enderecoOpt.orElseGet(Endereco::new);
         endereco.setUsuario(usuario);
-        endereco.setRua(usuario.getEndereco() != null ? usuario.getEndereco() : "");
-        endereco.setNumero(endereco.getNumero() == null || endereco.getNumero().isBlank() ? "S/N" : endereco.getNumero());
-        endereco.setBairro(endereco.getBairro() == null ? "" : endereco.getBairro());
-        endereco.setCidade(usuario.getCidade() != null ? usuario.getCidade() : "");
-        endereco.setEstado(usuario.getEstado() != null ? usuario.getEstado() : "");
-        endereco.setCep(usuario.getCep() != null ? usuario.getCep() : "");
-        endereco.setPrincipal(true);
+        endereco.setRua(enderecoRua != null ? enderecoRua : endereco.getRua());
+        endereco.setCidade(enderecoCidade != null ? enderecoCidade : endereco.getCidade());
+        endereco.setEstado(enderecoEstado != null ? enderecoEstado : endereco.getEstado());
+        endereco.setCep(enderecoCep != null ? enderecoCep : endereco.getCep());
 
         enderecoRepository.save(endereco);
         syncTelefoneDoUsuario(usuario);

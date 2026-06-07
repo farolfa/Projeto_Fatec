@@ -14,9 +14,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_criar_pedido_com_endereco
     @contato_telefone VARCHAR(20) = NULL,
     @id_servico BIGINT = NULL,
     @rua VARCHAR(200),
-    @numero VARCHAR(10) = 'S/N',
     @cidade VARCHAR(120),
-    @bairro VARCHAR(100) = NULL,
     @estado VARCHAR(2),
     @cep VARCHAR(8),
     @id_pedido_gerado BIGINT OUTPUT,
@@ -41,10 +39,10 @@ BEGIN
         END;
 
         INSERT INTO dbo.enderecos (
-            bairro, cep, cidade, estado, numero, principal, rua, id_usuario
+            cep, cidade, estado, rua, id_usuario
         )
         VALUES (
-            @bairro, @cep, @cidade, @estado, ISNULL(NULLIF(@numero, ''), 'S/N'), 1, @rua, @id_usuario
+            @cep, @cidade, @estado, @rua, @id_usuario
         );
 
         SET @id_endereco_gerado = SCOPE_IDENTITY();

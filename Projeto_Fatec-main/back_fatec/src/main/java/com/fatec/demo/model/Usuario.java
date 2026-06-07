@@ -2,6 +2,7 @@ package com.fatec.demo.model;
 
 import com.fatec.demo.model.enums.TipoUsuario;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,8 +28,7 @@ import jakarta.persistence.UniqueConstraint;
         @UniqueConstraint(name = "uk_usuarios_cpf", columnNames = "cpf")
     },
     indexes = {
-        @Index(name = "idx_usuarios_tipo", columnList = "tipo"),
-        @Index(name = "idx_usuarios_ativo", columnList = "ativo")
+        @Index(name = "idx_usuarios_tipo", columnList = "tipo")
     }
 )
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -51,9 +51,6 @@ public class Usuario {
     @Column(nullable = false, length = 128)
     private String senha;
 
-    @Column(nullable = false)
-    private boolean ativo = true;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TipoUsuario tipo;
@@ -66,18 +63,22 @@ public class Usuario {
 
     /** Telefone principal — não persistido aqui; vem da tabela telefones (FK). */
     @Transient
+    @JsonProperty("telefone")
     private String telefone;
 
     /** Endereço (logradouro) principal — não persistido aqui; vem da tabela enderecos (FK). */
     @Transient
+    @JsonProperty("endereco")
     private String endereco;
 
     /** Estado — não persistido aqui; vem da tabela enderecos (FK). */
     @Transient
+    @JsonProperty("estado")
     private String estado;
 
     /** CEP — não persistido aqui; vem da tabela enderecos (FK). */
     @Transient
+    @JsonProperty("cep")
     private String cep;
 
     @Column(length = 500)
@@ -89,17 +90,17 @@ public class Usuario {
 
     /** Cidade — não persistida aqui; vem da tabela enderecos (FK). */
     @Transient
+    @JsonProperty("cidade")
     private String cidade;
 
     public Usuario() {
     }
 
-    public Usuario(Long id, String nome, String email, String senha, boolean ativo, String tipo, String cpf, String telefone, String endereco, String estado, String cep, String bio, String foto, String cidade) {
+    public Usuario(Long id, String nome, String email, String senha, String tipo, String cpf, String telefone, String endereco, String estado, String cep, String bio, String foto, String cidade) {
         this.id = id;
         this.nome = nome;
         this.email = email;
         this.senha = senha;
-        this.ativo = ativo;
         setTipo(tipo);
         this.cpf = cpf;
         this.telefone = telefone;
@@ -143,12 +144,21 @@ public class Usuario {
         this.senha = senha;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isAtivo() {
-        return ativo;
+        Integer resolvedStatus = getStatus();
+        return resolvedStatus != null && resolvedStatus != 0;
     }
 
     public void setAtivo(boolean ativo) {
-        this.ativo = ativo;
+        if (!ativo) {
+            this.status = 0;
+            return;
+        }
+
+        if (this.status == null || this.status == 0) {
+            this.status = inferStatusFromTipo(this.tipo);
+        }
     }
 
     public String getTipo() {

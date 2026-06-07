@@ -129,14 +129,12 @@ SELECT
     t.numero      AS telefone,
     t.tipo        AS tipo_telefone,
     e.rua         AS endereco,
-    e.numero      AS numero_endereco,
-    e.bairro,
     e.cidade,
     e.estado,
     e.cep
 FROM usuarios u
 LEFT JOIN telefones t  ON t.id_usuario  = u.id AND t.principal = 1
-LEFT JOIN enderecos e  ON e.id_usuario  = u.id AND e.principal = 1
+LEFT JOIN enderecos e  ON e.id_usuario  = u.id
 ');
 GO
 
@@ -149,7 +147,7 @@ SELECT u.id, u.nome, u.email, u.ativo, u.tipo, u.cpf,
        u.bio, u.foto
 FROM usuarios u
 LEFT JOIN telefones t ON t.id_usuario = u.id AND t.principal = 1
-LEFT JOIN enderecos e ON e.id_usuario = u.id AND e.principal = 1
+LEFT JOIN enderecos e ON e.id_usuario = u.id
 WHERE u.tipo = ''CLIENTE''
 ');
 GO
@@ -163,7 +161,7 @@ SELECT u.id, u.nome, u.email, u.ativo, u.tipo, u.cpf,
        u.bio, u.foto
 FROM usuarios u
 LEFT JOIN telefones t ON t.id_usuario = u.id AND t.principal = 1
-LEFT JOIN enderecos e ON e.id_usuario = u.id AND e.principal = 1
+LEFT JOIN enderecos e ON e.id_usuario = u.id
 WHERE u.tipo = ''PRESTADOR''
 ');
 GO
@@ -185,7 +183,7 @@ SELECT p.id, p.titulo, p.descricao, p.localizacao, p.status,
        u.id AS cliente_id, u.nome AS cliente_nome, u.email AS cliente_email,
        s.id AS servico_id, s.titulo AS servico_titulo,
        c.nome AS categoria,
-       e.id AS endereco_id, e.rua, e.numero, e.bairro, e.cidade, e.estado, e.cep
+       e.id AS endereco_id, e.rua, e.cidade, e.estado, e.cep
 FROM pedidos p
 JOIN usuarios u ON u.id = p.id_usuario
 LEFT JOIN servico_catalogo s ON s.id = p.id_servico
@@ -235,8 +233,8 @@ BEGIN
             '11111111111', 'Eletricista com 8 anos de experiência. Atendo residências e comércios.');
     INSERT INTO telefones (id_usuario, numero, tipo, principal)
     SELECT id, '11911111111', 'celular', 1 FROM usuarios WHERE email = 'joao.silva@teste.com';
-    INSERT INTO enderecos (id_usuario, rua, numero, bairro, cidade, estado, cep, principal)
-    SELECT id, 'Rua das Flores', '10', 'Centro', 'São Paulo', 'SP', '01310100', 1 FROM usuarios WHERE email = 'joao.silva@teste.com';
+    INSERT INTO enderecos (id_usuario, rua, cidade, estado, cep)
+    SELECT id, 'Rua das Flores', 'São Paulo', 'SP', '01310100' FROM usuarios WHERE email = 'joao.silva@teste.com';
 END
 GO
 
@@ -247,8 +245,8 @@ BEGIN
             '22222222222', 'Especialista em limpeza residencial e pós-obra. Mais de 500 clientes atendidos.');
     INSERT INTO telefones (id_usuario, numero, tipo, principal)
     SELECT id, '11922222222', 'celular', 1 FROM usuarios WHERE email = 'maria.santos@teste.com';
-    INSERT INTO enderecos (id_usuario, rua, numero, bairro, cidade, estado, cep, principal)
-    SELECT id, 'Av. Paulista', '200', 'Bela Vista', 'São Paulo', 'SP', '01310200', 1 FROM usuarios WHERE email = 'maria.santos@teste.com';
+    INSERT INTO enderecos (id_usuario, rua, cidade, estado, cep)
+    SELECT id, 'Av. Paulista', 'São Paulo', 'SP', '01310200' FROM usuarios WHERE email = 'maria.santos@teste.com';
 END
 GO
 
@@ -259,8 +257,8 @@ BEGIN
             '33333333333', 'Técnico em informática. Formatações, redes Wi-Fi e suporte remoto.');
     INSERT INTO telefones (id_usuario, numero, tipo, principal)
     SELECT id, '11933333333', 'celular', 1 FROM usuarios WHERE email = 'carlos.tech@teste.com';
-    INSERT INTO enderecos (id_usuario, rua, numero, bairro, cidade, estado, cep, principal)
-    SELECT id, 'Rua Augusta', '300', 'Consolação', 'São Paulo', 'SP', '01305000', 1 FROM usuarios WHERE email = 'carlos.tech@teste.com';
+    INSERT INTO enderecos (id_usuario, rua, cidade, estado, cep)
+    SELECT id, 'Rua Augusta', 'São Paulo', 'SP', '01305000' FROM usuarios WHERE email = 'carlos.tech@teste.com';
 END
 GO
 
@@ -271,8 +269,8 @@ BEGIN
             '44444444444', 'Personal trainer certificada. Treinos personalizados em casa ou na academia.');
     INSERT INTO telefones (id_usuario, numero, tipo, principal)
     SELECT id, '11944444444', 'celular', 1 FROM usuarios WHERE email = 'ana.personal@teste.com';
-    INSERT INTO enderecos (id_usuario, rua, numero, bairro, cidade, estado, cep, principal)
-    SELECT id, 'Rua Oscar Freire', '50', 'Jardins', 'São Paulo', 'SP', '01426001', 1 FROM usuarios WHERE email = 'ana.personal@teste.com';
+    INSERT INTO enderecos (id_usuario, rua, cidade, estado, cep)
+    SELECT id, 'Rua Oscar Freire', 'São Paulo', 'SP', '01426001' FROM usuarios WHERE email = 'ana.personal@teste.com';
 END
 GO
 
@@ -283,8 +281,8 @@ BEGIN
     VALUES ('Pedro Cliente', 'cliente@teste.com', 'Teste@123', 1, 'CLIENTE', '55555555555', NULL);
     INSERT INTO telefones (id_usuario, numero, tipo, principal)
     SELECT id, '11955555555', 'celular', 1 FROM usuarios WHERE email = 'cliente@teste.com';
-    INSERT INTO enderecos (id_usuario, rua, numero, bairro, cidade, estado, cep, principal)
-    SELECT id, 'Rua Bela Cintra', '100', 'Jardins', 'São Paulo', 'SP', '01415001', 1 FROM usuarios WHERE email = 'cliente@teste.com';
+    INSERT INTO enderecos (id_usuario, rua, cidade, estado, cep)
+    SELECT id, 'Rua Bela Cintra', 'São Paulo', 'SP', '01415001' FROM usuarios WHERE email = 'cliente@teste.com';
 END
 GO
 

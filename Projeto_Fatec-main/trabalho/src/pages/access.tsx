@@ -14,6 +14,7 @@ type RegisterField =
   | "nome"
   | "email"
   | "senha"
+  | "confirmarSenha"
   | "cpf"
   | "telefone"
   | "endereco"
@@ -139,6 +140,7 @@ function validateRegisterData(data: {
   nome: string;
   email: string;
   senha: string;
+  confirmarSenha: string;
   cpf: string;
   telefone: string;
   endereco: string;
@@ -157,6 +159,8 @@ function validateRegisterData(data: {
   if (!data.cidade.trim()) errors.cidade = "Informe a cidade.";
   if (data.estado.trim().length !== 2) errors.estado = "UF deve ter 2 letras.";
   if (onlyDigits(data.cep).length !== 8) errors.cep = "CEP deve conter 8 digitos.";
+  if (!data.confirmarSenha.trim()) errors.confirmarSenha = "Confirme sua senha.";
+  if (data.senha !== data.confirmarSenha) errors.confirmarSenha = "As senhas nao coincidem.";
 
   return errors;
 }
@@ -179,6 +183,7 @@ export function Access() {
     cidade: "",
     estado: "",
     cep: "",
+    confirmarSenha: "",
     foto: "",
     tipo: "cliente" as const,
   });
@@ -503,6 +508,23 @@ export function Access() {
               </div>
 
               <div className="space-y-1.5">
+                <Label htmlFor="register-confirm-password">Confirme a senha</Label>
+                <Input
+                  id="register-confirm-password"
+                  type="password"
+                  placeholder="Repita sua senha"
+                  value={registerData.confirmarSenha}
+                  aria-invalid={!!registerErrors.confirmarSenha}
+                  onChange={(e) => {
+                    clearRegisterFieldError("confirmarSenha");
+                    setRegisterData((prev) => ({ ...prev, confirmarSenha: e.target.value }));
+                  }}
+                  required
+                />
+                {registerErrors.confirmarSenha && <p className="text-xs text-red-600">{registerErrors.confirmarSenha}</p>}
+              </div>
+
+              <div className="space-y-1.5">
                 <Label htmlFor="register-cpf">CPF</Label>
                 <Input
                   id="register-cpf"
@@ -559,6 +581,28 @@ export function Access() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
+                  <Label htmlFor="register-state">Estado (UF)</Label>
+                  <select
+                    id="register-state"
+                    value={registerData.estado}
+                    aria-invalid={!!registerErrors.estado}
+                    onChange={(e) => {
+                      clearRegisterFieldError("estado");
+                      clearRegisterFieldError("cidade");
+                      setRegisterData((prev) => ({ ...prev, estado: e.target.value, cidade: "" }));
+                    }}
+                    className="border-input bg-input-background focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive flex h-9 w-full rounded-md border px-3 py-2 text-sm outline-none focus-visible:ring-[3px]"
+                  >
+                    <option value="">Selecione o estado</option>
+                    {BRAZILIAN_STATES.map((uf) => (
+                      <option key={uf} value={uf}>
+                        {uf}
+                      </option>
+                    ))}
+                  </select>
+                  {registerErrors.estado && <p className="text-xs text-red-600">{registerErrors.estado}</p>}
+                </div>
+                <div className="space-y-1.5">
                   <Label htmlFor="register-city">Cidade</Label>
                   <select
                     id="register-city"
@@ -586,28 +630,6 @@ export function Access() {
                     ))}
                   </select>
                   {registerErrors.cidade && <p className="text-xs text-red-600">{registerErrors.cidade}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="register-state">Estado (UF)</Label>
-                  <select
-                    id="register-state"
-                    value={registerData.estado}
-                    aria-invalid={!!registerErrors.estado}
-                    onChange={(e) => {
-                      clearRegisterFieldError("estado");
-                      clearRegisterFieldError("cidade");
-                      setRegisterData((prev) => ({ ...prev, estado: e.target.value, cidade: "" }));
-                    }}
-                    className="border-input bg-input-background focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive flex h-9 w-full rounded-md border px-3 py-2 text-sm outline-none focus-visible:ring-[3px]"
-                  >
-                    <option value="">Selecione o estado</option>
-                    {BRAZILIAN_STATES.map((uf) => (
-                      <option key={uf} value={uf}>
-                        {uf}
-                      </option>
-                    ))}
-                  </select>
-                  {registerErrors.estado && <p className="text-xs text-red-600">{registerErrors.estado}</p>}
                 </div>
               </div>
 

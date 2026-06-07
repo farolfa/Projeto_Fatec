@@ -24,6 +24,18 @@ const categories = [
 	"TI e Tecnologia",
 ];
 
+function onlyDigits(value: string): string {
+	return value.replace(/\D/g, "");
+}
+
+function formatPhone(value: string): string {
+	const digits = onlyDigits(value).slice(0, 11);
+	if (digits.length <= 10) {
+		return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+	}
+	return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
+}
+
 export function RequestService() {
 	const [submitted, setSubmitted] = useState(false);
 	const location = useLocation();
@@ -37,7 +49,7 @@ export function RequestService() {
 		description: "",
 		name: user?.nome ?? "",
 		email: user?.email ?? "",
-		phone: user?.telefone ?? "",
+		phone: formatPhone(user?.telefone ?? ""),
 		address: hasSavedAddress ? savedAddress : "",
 	});
 	const [addressMode, setAddressMode] = useState<"saved" | "new">(
@@ -221,8 +233,9 @@ export function RequestService() {
 								id="phone"
 								type="tel"
 								placeholder="(11) 98765-4321"
+							maxLength={15}
 								value={formData.phone}
-								onChange={(event) => handleChange("phone", event.target.value)}
+								onChange={(event) => handleChange("phone", formatPhone(event.target.value))}
 								required
 							/>
 						</div>
